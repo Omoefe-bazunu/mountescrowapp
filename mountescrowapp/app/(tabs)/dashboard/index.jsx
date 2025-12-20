@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react"; // Added useCallback
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  FlatList,
+  RefreshControl, // Added RefreshControl
 } from "react-native";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,20 +15,24 @@ import { useAuth } from "../../../contexts/AuthContexts";
 import apiClient from "../../../src/api/apiClient";
 
 export default function DashboardOverview() {
-  const { user, loading: authLoading } = useAuth();
+  // Destructure 'refresh' from useAuth to update the Wallet Balance specifically
+  const { user, loading: authLoading, refresh: refreshUser } = useAuth();
   const router = useRouter();
 
   const [stats, setStats] = useState({ activeDeals: 0, pendingProposals: 0 });
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // New state for pull-to-refresh
 
   useEffect(() => {
     if (user) fetchDashboardData();
     else if (!authLoading) setLoading(false);
   }, [user, authLoading]);
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
+  const fetchDashboardData = async (isRefreshing = false) => {
+    // Only show full-screen loader if not currently doing a pull-to-refresh
+    if (!isRefreshing) setLoading(true);
+
     try {
       const res = await apiClient.get("/dashboard/data");
       const data = res.data;
@@ -42,8 +46,19 @@ export default function DashboardOverview() {
       console.error("Dashboard fetch error:", err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  // The function triggered by the pull gesture
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    // Refresh both the dashboard stats and the user profile (for balance)
+    await Promise.all([
+      fetchDashboardData(true),
+      refreshUser ? refreshUser() : Promise.resolve(),
+    ]);
+  }, [refreshUser]);
 
   const toDate = (input) => {
     if (!input) return null;
@@ -68,7 +83,7 @@ export default function DashboardOverview() {
       item.direction === "incoming";
 
     return (
-      <View style={styles.txRow}>
+      <View style={styles.txRow} key={item.id}>
         <View style={styles.txInfo}>
           <Text style={styles.txDescription} numberOfLines={1}>
             {item.description}
@@ -102,6 +117,15 @@ export default function DashboardOverview() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
+      // Attach the RefreshControl here
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#f97316"]} // Android spinner color
+          tintColor="#f97316" // iOS spinner color
+        />
+      }
     >
       {/* Stats Cards Section */}
       <View style={styles.statsGrid}>

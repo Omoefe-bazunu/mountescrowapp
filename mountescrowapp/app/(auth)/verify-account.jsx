@@ -21,12 +21,19 @@ export default function VerifyAccountScreen() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const refresh = useAuth();
+
+  // FIX 1: Destructure 'refresh' from the context object
+  const { refresh } = useAuth();
+
   const [resending, setResending] = useState(false);
   const router = useRouter();
 
   const handleVerify = async () => {
-    if (!email || !code) {
+    // FIX 2: Normalize inputs (Trim and Lowercase)
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+
+    if (!cleanEmail || !cleanCode) {
       Alert.alert(
         "Missing Information",
         "Please enter both your email and the verification code."
@@ -36,29 +43,29 @@ export default function VerifyAccountScreen() {
 
     setLoading(true);
     try {
-      // Use your apiClient to call the direct backend route
-      // const response = await apiClient.post("/verify", {
-      //   email: email.trim(),
-      //   token: code.trim(),
-      // });
-      const response = await apiClient.post("/verify", { email, token: code });
+      // Send normalized data to backend
+      const response = await apiClient.post("/verify", {
+        email: cleanEmail,
+        token: cleanCode,
+      });
+
       const { token } = response.data;
 
       if (token) {
+        // 1. Store the new token
         await SecureStore.setItemAsync("userToken", token);
+
+        // 2. Refresh AuthContext immediately using the new token
+        // This updates the 'user' state and 'isVerified' globally
         await refresh(token);
-        router.replace("/(tabs)/dashboard");
+
+        Alert.alert("✅ Email Verified!", "Your account is now ready.", [
+          {
+            text: "Continue",
+            onPress: () => router.replace("/(tabs)/dashboard"),
+          },
+        ]);
       }
-
-      Alert.alert("✅ Email Verified!", "Logging you in...");
-
-      // If the verification returns a token, store it
-      if (token) {
-        await SecureStore.setItemAsync("userToken", token);
-      }
-
-      // Redirect to the main application area
-      router.replace("/dashboard");
     } catch (error) {
       const errorMsg = error.response?.data?.error || "Invalid code or email.";
       Alert.alert("Verification Failed", errorMsg);

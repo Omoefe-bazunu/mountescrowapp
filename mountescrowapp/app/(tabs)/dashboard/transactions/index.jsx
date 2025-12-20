@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
+  RefreshControl, // Added for pull-to-refresh
 } from "react-native";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +17,7 @@ import apiClient from "../../../../src/api/apiClient";
 export default function TransactionsScreen() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // New state
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -24,18 +26,24 @@ export default function TransactionsScreen() {
     fetchTransactions();
   }, []);
 
-  const fetchTransactions = async () => {
-    setLoading(true);
+  const fetchTransactions = async (isRefreshing = false) => {
+    if (!isRefreshing) setLoading(true);
     try {
-      // Call your backend directly via apiClient
       const res = await apiClient.get("/transactions");
       setTransactions(res.data.transactions || []);
     } catch (err) {
       console.error("Failed to fetch transactions:", err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchTransactions(true);
+  }, []);
 
   // Logic ported from Next.js [cite: 531]
   const filteredTransactions = useMemo(() => {
@@ -75,7 +83,7 @@ export default function TransactionsScreen() {
           </View>
 
           <View style={styles.txDetails}>
-            <Text style={styles.txDescription} numberOfLines={1}>
+            <Text style={styles.txDescription}>
               {item.description || "Transaction"}
             </Text>
             <Text style={styles.txDate}>
@@ -112,7 +120,6 @@ export default function TransactionsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Search and Filters Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={18} color="#999" />
@@ -164,6 +171,14 @@ export default function TransactionsScreen() {
           renderItem={renderTransaction}
           keyExtractor={(item, index) => item.id || index.toString()}
           contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#003366"]} // Android
+              tintColor="#003366" // iOS
+            />
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="receipt-outline" size={64} color="#ccc" />
@@ -228,15 +243,22 @@ const styles = StyleSheet.create({
   },
   txMain: { flexDirection: "row", alignItems: "center" },
   iconContainer: { marginRight: 12 },
-  txDetails: { flex: 1 },
+  txDetails: {
+    flex: 1, // Added to allow text to take remaining space and wrap
+    marginRight: 10, // Safety gap
+  },
   txDescription: {
     fontSize: 15,
     fontWeight: "700",
     color: "#333",
     marginBottom: 4,
+    flexWrap: "wrap", // Ensures text breaks to new lines
   },
   txDate: { fontSize: 12, color: "#999" },
-  txAmount: { alignItems: "flex-end" },
+  txAmount: {
+    alignItems: "flex-end",
+    flexShrink: 0, // Prevents amount from being compressed
+  },
   amountText: { fontSize: 15, fontWeight: "bold", marginBottom: 6 },
   green: { color: "#16a34a" },
   red: { color: "#dc2626" },

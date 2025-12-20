@@ -12,8 +12,8 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../../contexts/AuthContexts";
 import apiClient from "../../../../src/api/apiClient";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -29,7 +29,7 @@ const kycFormSchema = z.object({
 });
 
 export default function KycScreen() {
-  const { user, refresh } = useAuth();
+  const { refresh } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -40,6 +40,7 @@ export default function KycScreen() {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(kycFormSchema),
@@ -53,18 +54,14 @@ export default function KycScreen() {
     },
   });
 
+  const selectedGender = watch("gender");
+
   const fetchUserData = async () => {
     try {
-      // 1. Correct endpoint to match your server
       const response = await apiClient.get("auth/check");
-
-      // 2. Extract the 'user' object from the response
       const data = response.data.user;
-
       if (data) {
         setUserData(data);
-
-        // 3. Pre-fill form if data exists
         if (data.displayName) {
           const parts = data.displayName.split(" ");
           setValue("firstName", parts[0] || "");
@@ -100,15 +97,16 @@ export default function KycScreen() {
       });
 
       if (response.data.success) {
-        await refresh();
+        await refresh(); // Update Auth Context
+        await fetchUserData(); // Refresh local screen state
         Alert.alert("Success", "KYC Verified Successfully!");
-        router.push("/dashboard/wallet");
+        // NO REDIRECT: Logic now stays on this screen
       } else {
         throw new Error(response.data.message || "Verification failed");
       }
     } catch (error) {
       Alert.alert("Verification Failed", error.message);
-      // Logic to update status to rejected can be called here
+      fetchUserData(); // Refresh to show any rejected status/reasons
     } finally {
       setSubmitting(false);
     }
@@ -126,6 +124,7 @@ export default function KycScreen() {
       <View style={styles.successContainer}>
         <Ionicons name="checkmark-circle" size={80} color="#16a34a" />
         <Text style={styles.successTitle}>KYC Approved!</Text>
+        <Text style={styles.successSub}>Your identity is verified.</Text>
         <Text style={styles.successSub}>
           Your wallet is ready for transactions.
         </Text>
@@ -175,6 +174,20 @@ export default function KycScreen() {
           <Text style={styles.errorText}>{errors.firstName.message}</Text>
         )}
 
+        <Text style={styles.label}>Middle Name (Optional)</Text>
+        <Controller
+          control={control}
+          name="middleName"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              value={value}
+              onChangeText={onChange}
+              placeholder="Quincy"
+            />
+          )}
+        />
+
         <Text style={styles.label}>Last Name</Text>
         <Controller
           control={control}
@@ -206,6 +219,32 @@ export default function KycScreen() {
             />
           )}
         />
+        {errors.phone && (
+          <Text style={styles.errorText}>{errors.phone.message}</Text>
+        )}
+
+        <Text style={styles.label}>Gender</Text>
+        <View style={styles.genderContainer}>
+          {["M", "F"].map((g) => (
+            <TouchableOpacity
+              key={g}
+              style={[
+                styles.genderBtn,
+                selectedGender === g && styles.genderBtnActive,
+              ]}
+              onPress={() => setValue("gender", g)}
+            >
+              <Text
+                style={[
+                  styles.genderBtnText,
+                  selectedGender === g && styles.genderBtnTextActive,
+                ]}
+              >
+                {g === "M" ? "Male" : "Female"}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         <Text style={styles.label}>Date of Birth</Text>
         <Controller
@@ -221,10 +260,14 @@ export default function KycScreen() {
             </TouchableOpacity>
           )}
         />
+        {errors.dob && (
+          <Text style={styles.errorText}>{errors.dob.message}</Text>
+        )}
         {showDatePicker && (
           <DateTimePicker
-            value={control._defaultValues.dob || new Date()}
+            value={new Date()}
             mode="date"
+            display="default"
             onChange={(event, date) => {
               setShowDatePicker(false);
               if (date) setValue("dob", date);
@@ -290,6 +333,18 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
+  genderContainer: { flexDirection: "row", gap: 10 },
+  genderBtn: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    alignItems: "center",
+  },
+  genderBtnActive: { backgroundColor: "#003366", borderColor: "#003366" },
+  genderBtnText: { color: "#666", fontWeight: "600" },
+  genderBtnTextActive: { color: "#fff" },
   datePickerBtn: {
     borderWidth: 1,
     borderColor: "#ddd",

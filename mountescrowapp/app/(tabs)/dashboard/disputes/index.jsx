@@ -55,20 +55,21 @@ export default function DisputesScreen() {
     }
   };
 
-  // ROBUST DATE PARSER: Handles strings and Firestore objects
-  const formatDate = (dateValue) => {
-    if (!dateValue) return "N/A";
-    try {
-      let date;
-      if (dateValue && typeof dateValue === "object" && dateValue.seconds) {
-        date = new Date(dateValue.seconds * 1000);
-      } else {
-        date = new Date(dateValue);
-      }
-      return isNaN(date.getTime()) ? "N/A" : format(date, "MMM dd, yyyy");
-    } catch (e) {
-      return "N/A";
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+
+    let date;
+    if (timestamp._seconds) {
+      date = new Date(timestamp._seconds * 1000);
+    } else if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else if (timestamp.toDate) {
+      date = timestamp.toDate();
+    } else {
+      date = new Date(timestamp);
     }
+
+    return date && !isNaN(date) ? format(date, "PPP") : "N/A";
   };
 
   const renderDispute = ({ item }) => {

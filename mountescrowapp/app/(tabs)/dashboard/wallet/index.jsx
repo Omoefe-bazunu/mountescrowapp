@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,11 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  FlatList,
   Clipboard,
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router"; // Added useFocusEffect
 import { useAuth } from "../../../../contexts/AuthContexts";
 import apiClient from "../../../../src/api/apiClient";
 import WithdrawModal from "./_components/WithdrawModal";
@@ -28,34 +27,31 @@ export default function WalletScreen() {
   const [transactions, setTransactions] = useState([]);
   const [virtualAccount, setVirtualAccount] = useState(null);
 
-  // Modal states
   const [showFundModal, setShowFundModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const router = useRouter();
 
-  const loadData = async () => {
+  // Updated loadData: accepts a 'silent' parameter to avoid jarring UI jumps
+  const loadData = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const [userRes, txRes] = await Promise.all([
         apiClient.get("auth/check"),
         apiClient.get("transactions"),
       ]);
 
-      // 1. Extract the 'user' object (This contains the accountNumber)
       const profile = userRes.data.user;
-
       setUserData(profile);
       setTransactions(txRes.data.transactions || []);
 
-      // 2. Map the profile data to the virtualAccount state
       if (profile?.accountNumber) {
         setVirtualAccount({
           virtualAccountNumber: profile.accountNumber,
           bankName: profile.bankName || "FCMB",
         });
       } else {
-        // This triggers the "Create Virtual Account" button if null
         setVirtualAccount(null);
       }
     } catch (err) {
@@ -66,23 +62,26 @@ export default function WalletScreen() {
     }
   };
 
-  const onRefresh = React.useCallback(async () => {
+  // REFRESH ON LOAD: This triggers every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadData(true); // Silent refresh when navigating back to screen
+    }, [])
+  );
+
+  const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      // Re-run your existing loadData logic
-      await loadData();
-      // Also refresh the Auth Context to ensure global user state is updated
-      await refresh();
+      await Promise.all([
+        loadData(true), // Load fresh wallet data
+        refresh(), // Refresh global Auth state (updates balance everywhere)
+      ]);
     } catch (error) {
       console.error("Refresh failed:", error);
     } finally {
       setIsRefreshing(false);
     }
   }, [refresh]);
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const copyAccount = (num) => {
     Clipboard.setString(num);
@@ -96,7 +95,6 @@ export default function WalletScreen() {
       </View>
     );
 
-  // KYC Guard: Restricted access if not approved [cite: 820-821]
   if (userData?.kycStatus !== "approved") {
     return (
       <View style={styles.kycContainer}>
@@ -116,34 +114,34 @@ export default function WalletScreen() {
     );
   }
 
-  const renderTransaction = ({ item }) => {
-    // Logic to identify debits vs credits [cite: 851-852]
+  const renderTransaction = (tx, idx) => {
     const isDebit =
-      item.type === "debit" || item.amount < 0 || item.direction === "outgoing";
+      tx.type === "debit" || tx.amount < 0 || tx.direction === "outgoing";
 
     return (
-      <View style={styles.txRow}>
+      <View key={tx.id || idx} style={styles.txRow}>
         <View style={styles.txInfo}>
           <Text style={styles.txDesc}>
-            {item.description || item.narration || "Transaction"}
+            {tx.description || tx.narration || "Transaction"}
           </Text>
           <Text style={styles.txDate}>
-            {item.date ? new Date(item.date).toLocaleDateString() : "N/A"}
+            {tx.date ? new Date(tx.date).toLocaleDateString() : "N/A"}
           </Text>
         </View>
+
         <View style={styles.txAmount}>
           <Text
             style={[styles.amountText, isDebit ? styles.red : styles.green]}
           >
-            {isDebit ? "-" : "+"}₦{Math.abs(item.amount).toLocaleString()}
+            {isDebit ? "-" : "+"}₦{Math.abs(tx.amount).toLocaleString()}
           </Text>
           <View
             style={[
               styles.statusBadge,
-              item.status === "SUCCESS" ? styles.bgSuccess : styles.bgPending,
+              tx.status === "SUCCESS" ? styles.bgSuccess : styles.bgPending,
             ]}
           >
-            <Text style={styles.statusText}>{item.status?.toLowerCase()}</Text>
+            <Text style={styles.statusText}>{tx.status?.toLowerCase()}</Text>
           </View>
         </View>
       </View>
@@ -158,12 +156,12 @@ export default function WalletScreen() {
         <RefreshControl
           refreshing={isRefreshing}
           onRefresh={onRefresh}
-          colors={["#f97316"]} // Android loader color
-          tintColor="#f97316" // iOS loader color
+          colors={["#f97316"]}
+          tintColor="#f97316"
         />
       }
     >
-      {/* Balance Card [cite: 822-832] */}
+      {/* Balance Card */}
       <View style={styles.balanceCard}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardLabel}>Available Balance</Text>
@@ -198,7 +196,7 @@ export default function WalletScreen() {
         </View>
       </View>
 
-      {/* Funding Account Info [cite: 835-841] */}
+      {/* Funding Info */}
       <View style={styles.infoSection}>
         <Text style={styles.sectionTitle}>Funding Account</Text>
         {virtualAccount ? (
@@ -233,13 +231,13 @@ export default function WalletScreen() {
         )}
       </View>
 
-      {/* Transaction History [cite: 846-869] */}
+      {/* Transaction History */}
       <View style={styles.txSection}>
         <Text style={styles.sectionTitle}>Transaction History</Text>
         {transactions.length > 0 ? (
           transactions.map((tx, idx) => (
             <React.Fragment key={tx.id || idx}>
-              {renderTransaction({ item: tx })}
+              {renderTransaction(tx, idx)}
               <View style={styles.divider} />
             </React.Fragment>
           ))
@@ -252,7 +250,7 @@ export default function WalletScreen() {
         isOpen={showWithdrawModal}
         onClose={() => setShowWithdrawModal(false)}
         balance={userData?.walletBalance}
-        onSuccess={loadData}
+        onSuccess={() => loadData(true)}
       />
       <FundModal
         isOpen={showFundModal}
@@ -262,12 +260,13 @@ export default function WalletScreen() {
       <CreateVirtualAccountModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onSuccess={loadData}
+        onSuccess={() => loadData(true)}
       />
     </ScrollView>
   );
 }
 
+// ... styles preserved from previous fix
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f3f4f6" },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
@@ -325,10 +324,21 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
-  txDesc: { fontSize: 14, fontWeight: "500", color: "#333", marginBottom: 4 },
+  txInfo: {
+    flex: 1,
+    marginRight: 15,
+  },
+  txDesc: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    marginBottom: 4,
+    flexWrap: "wrap",
+  },
   txDate: { fontSize: 12, color: "#999" },
-  txAmount: { alignItems: "flex-end" },
+  txAmount: { alignItems: "flex-end", flexShrink: 0 },
   amountText: { fontSize: 15, fontWeight: "bold", marginBottom: 4 },
   red: { color: "#dc2626" },
   green: { color: "#16a34a" },

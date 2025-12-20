@@ -21,6 +21,7 @@ export default function WithdrawModal({ isOpen, onClose, balance, onSuccess }) {
     narration: "",
   });
   const [banks, setBanks] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // New state for search
   const [loading, setLoading] = useState(false);
   const [showBankList, setShowBankList] = useState(false);
 
@@ -33,11 +34,17 @@ export default function WithdrawModal({ isOpen, onClose, balance, onSuccess }) {
     }
   }, [isOpen]);
 
+  // Filter banks based on search query
+  const filteredBanks = banks.filter((b) =>
+    b.bankName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleWithdraw = async () => {
     if (Number(form.amount) > balance)
       return Alert.alert("Error", "Insufficient balance.");
     if (form.account.length !== 10)
       return Alert.alert("Error", "Account number must be 10 digits.");
+    if (!form.bankCode) return Alert.alert("Error", "Please select a bank.");
 
     setLoading(true);
     try {
@@ -52,12 +59,18 @@ export default function WithdrawModal({ isOpen, onClose, balance, onSuccess }) {
         "Withdrawal initiated! You'll receive an email shortly."
       );
       onSuccess();
-      onClose();
+      handleClose(); // Use internal close to reset states
     } catch (err) {
       Alert.alert("Failed", err.response?.data?.error || "Withdrawal failed.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    setSearchQuery("");
+    setShowBankList(false);
+    onClose();
   };
 
   return (
@@ -83,13 +96,22 @@ export default function WithdrawModal({ isOpen, onClose, balance, onSuccess }) {
             style={styles.input}
             onPress={() => setShowBankList(!showBankList)}
           >
-            <Text>{form.bankName || "Search and select bank..."}</Text>
+            <Text style={{ color: form.bankName ? "#333" : "#999" }}>
+              {form.bankName || "Select bank..."}
+            </Text>
           </TouchableOpacity>
 
           {showBankList && (
-            <View style={styles.bankList}>
+            <View style={styles.bankListContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search bank name..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoFocus={true}
+              />
               <FlatList
-                data={banks}
+                data={filteredBanks}
                 keyExtractor={(item) => item.bankCode}
                 renderItem={({ item }) => (
                   <TouchableOpacity
@@ -101,12 +123,16 @@ export default function WithdrawModal({ isOpen, onClose, balance, onSuccess }) {
                         bankName: item.bankName,
                       });
                       setShowBankList(false);
+                      setSearchQuery(""); // Reset search on select
                     }}
                   >
                     <Text style={styles.bankItemText}>{item.bankName}</Text>
                   </TouchableOpacity>
                 )}
-                style={{ maxHeight: 200 }}
+                style={{ maxHeight: 180 }}
+                ListEmptyComponent={
+                  <Text style={styles.emptyText}>No matching banks found.</Text>
+                }
               />
             </View>
           )}
@@ -122,7 +148,7 @@ export default function WithdrawModal({ isOpen, onClose, balance, onSuccess }) {
           />
 
           <View style={styles.actions}>
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleClose}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -181,12 +207,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   submitText: { color: "#fff", fontWeight: "bold" },
-  bankList: {
+  bankListContainer: {
     borderWidth: 1,
     borderColor: "#eee",
     borderRadius: 8,
     marginTop: 4,
+    backgroundColor: "#fafafa",
+    overflow: "hidden",
   },
-  bankItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: "#f9f9f9" },
-  bankItemText: { fontSize: 14 },
+  searchInput: {
+    padding: 10,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    fontSize: 14,
+  },
+  bankItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: "#f0f0f0" },
+  bankItemText: { fontSize: 14, color: "#333" },
+  emptyText: { padding: 20, textAlign: "center", color: "#999", fontSize: 13 },
 });

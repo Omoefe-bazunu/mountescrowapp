@@ -8,6 +8,9 @@ import {
   Bell,
   MessageCircle,
   Headset,
+  BellIcon,
+  User2,
+  BellRing,
 } from "lucide-react-native";
 import {
   View,
@@ -20,6 +23,7 @@ import {
   StatusBar,
 } from "react-native";
 import { useTheme } from "../../contexts/ThemeContext";
+import { NotificationBell } from "../../components/NotificationBell";
 
 function TopNavigation() {
   const router = useRouter();
@@ -47,13 +51,8 @@ function TopNavigation() {
         {/* Right: Notifications and Contact */}
         <View style={styles.rightSection}>
           {/* Notifications Button */}
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => router.push("/(tabs)/about/notifications")}
-            activeOpacity={0.7}
-          >
-            <Bell size={24} color={colors.primary} />
-          </TouchableOpacity>
+
+          <NotificationBell />
 
           {/* Contact Button */}
           <TouchableOpacity
@@ -134,12 +133,14 @@ export default function TabLayout() {
           }}
         />
 
-        {/* 👤 Profile Tab */}
+        {/* Notification Tab */}
         <Tabs.Screen
-          name="profile"
+          name="notifications"
           options={{
-            title: "Profile",
-            tabBarIcon: ({ size, color }) => <User size={size} color={color} />,
+            title: "Notifications",
+            tabBarIcon: ({ size, color }) => (
+              <BellRing size={size} color={color} />
+            ),
           }}
         />
       </Tabs>

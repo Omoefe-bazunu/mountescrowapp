@@ -73,24 +73,21 @@ export default function DealDetailScreen() {
     }
   };
 
-  const formatDate = (dateValue) => {
-    if (!dateValue) return "N/A";
-    try {
-      let date;
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
 
-      // 1. Handle Firestore Timestamp objects { seconds, nanoseconds } [cite: 159]
-      if (dateValue && typeof dateValue === "object" && dateValue.seconds) {
-        date = new Date(dateValue.seconds * 1000);
-      }
-      // 2. Handle ISO Strings (Profile Screen style) or Date objects [cite: 157, 160]
-      else {
-        date = new Date(dateValue);
-      }
-
-      return isNaN(date.getTime()) ? "N/A" : format(date, "PPP");
-    } catch (e) {
-      return "N/A";
+    let date;
+    if (timestamp._seconds) {
+      date = new Date(timestamp._seconds * 1000);
+    } else if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else if (timestamp.toDate) {
+      date = timestamp.toDate();
+    } else {
+      date = new Date(timestamp);
     }
+
+    return date && !isNaN(date) ? format(date, "PPP") : "N/A";
   };
 
   if (loading)
