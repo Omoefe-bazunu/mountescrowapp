@@ -54,13 +54,13 @@ function TopNavigation() {
 
           <NotificationBell />
 
-          {/* Contact Button */}
+          {/* FAQ Button */}
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => router.push("/(tabs)/(contact)")}
+            onPress={() => router.push("/(tabs)/about/faqs")}
             activeOpacity={0.7}
           >
-            <Headset size={24} color={colors.primary} />
+            <HelpCircle size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -119,17 +119,6 @@ export default function TabLayout() {
           options={{
             title: "About",
             tabBarIcon: ({ size, color }) => <Info size={size} color={color} />,
-          }}
-        />
-
-        {/* ❓ FAQs Tab */}
-        <Tabs.Screen
-          name="faqs"
-          options={{
-            title: "FAQs",
-            tabBarIcon: ({ size, color }) => (
-              <HelpCircle size={size} color={color} />
-            ),
           }}
         />
 

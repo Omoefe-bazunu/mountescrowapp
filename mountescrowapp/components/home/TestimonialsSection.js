@@ -1,5 +1,4 @@
-// sections/TestimonialsSection.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -10,16 +9,39 @@ import {
   Animated,
   Modal,
   TextInput,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
 } from "react-native";
-import { Star, PlusCircle, X } from "lucide-react-native";
+// ✅ REVERTED: Back to ImagePicker
+import * as ImagePicker from "expo-image-picker";
+import {
+  Star,
+  PlusCircle,
+  X,
+  Trash2,
+  Edit2,
+  Image as ImageIcon,
+} from "lucide-react-native";
 import { Fonts } from "../../constants/Fonts";
+import {
+  getAllTestimonials,
+  getMyTestimonial,
+  createTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+} from "../../src/services/testimonials.service";
 
 export default function TestimonialsSection() {
-  const [testimonialsInView, setTestimonialsInView] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isSliding, setIsSliding] = useState(false);
   const [testimonials, setTestimonials] = useState([]);
+  const [userTestimonial, setUserTestimonial] = useState(null);
+
+  // Track image load errors to show fallback if URL is broken
+  const [imageError, setImageError] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     authorName: "",
     authorTitle: "",
@@ -27,217 +49,357 @@ export default function TestimonialsSection() {
     rating: 5,
     photo: null,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [slideAnim] = useState(() => new Animated.Value(0));
-  const [nextSlideAnim] = useState(() => new Animated.Value(1));
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const timer = setTimeout(() => setTestimonialsInView(true), 100);
-    return () => clearTimeout(timer);
+    loadData();
   }, []);
 
+  const loadData = async () => {
+    try {
+      const allData = await getAllTestimonials();
+      setTestimonials(allData);
+      const myData = await getMyTestimonial();
+      setUserTestimonial(myData);
+    } catch (e) {
+      console.log("Error loading testimonials", e);
+    }
+  };
+
+  // Reset error state when sliding
   useEffect(() => {
-    if (testimonials.length > 1 && testimonialsInView) {
+    setImageError(false);
+  }, [currentIndex]);
+
+  useEffect(() => {
+    if (testimonials.length > 1 && !showModal) {
       const timer = setTimeout(() => {
-        setIsSliding(true);
-        Animated.parallel([
-          Animated.timing(slideAnim, {
-            toValue: -1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(nextSlideAnim, {
-            toValue: 0,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-          slideAnim.setValue(0);
-          nextSlideAnim.setValue(1);
-          setIsSliding(false);
-        });
+        setCurrentIndex((prev) => (prev + 1) % testimonials.length);
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [currentIndex, testimonials, testimonialsInView]);
+  }, [currentIndex, testimonials, showModal]);
 
-  const renderStars = (rating) =>
-    [...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        size={16}
-        color={i < rating ? "#FBBF24" : "#D1D5DB"}
-        fill={i < rating ? "#FBBF24" : "none"}
-      />
-    ));
+  const handleOpenModal = () => {
+    if (userTestimonial) {
+      setFormData({
+        authorName: userTestimonial.authorName,
+        authorTitle: userTestimonial.authorTitle,
+        review: userTestimonial.review,
+        rating: userTestimonial.rating,
+        photo: null,
+      });
+    } else {
+      setFormData({
+        authorName: "",
+        authorTitle: "",
+        review: "",
+        rating: 5,
+        photo: null,
+      });
+    }
+    setShowModal(true);
+  };
+
+  // ✅ REVERTED: Using ImagePicker (Safe Mode)
+  const handlePickImage = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission Required", "You need to allow access to photos.");
+      return;
+    }
+
+    // allowsEditing: false prevents the 'stuck' crop screen on some Androids
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+
+      // Ensure we have a name for the file (required for upload)
+      const localUri = asset.uri;
+      const filename = localUri.split("/").pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image`;
+
+      setFormData({
+        ...formData,
+        photo: {
+          uri: localUri,
+          name: filename,
+          type: type,
+        },
+      });
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.authorName || !formData.review) {
+      return Alert.alert("Required", "Name and Review are required.");
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (userTestimonial) {
+        await updateTestimonial(userTestimonial.id, formData, formData.photo);
+        Alert.alert("Success", "Testimonial updated!");
+      } else {
+        await createTestimonial(formData, formData.photo);
+        Alert.alert("Success", "Testimonial submitted!");
+      }
+
+      await loadData();
+      setShowModal(false);
+    } catch (error) {
+      Alert.alert("Error", error.message || "Operation failed.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Review",
+      "Are you sure you want to delete your testimonial?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setIsSubmitting(true);
+            try {
+              await deleteTestimonial(userTestimonial.id);
+              Alert.alert("Deleted", "Your testimonial has been removed.");
+              setUserTestimonial(null);
+              await loadData();
+              setShowModal(false);
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete.");
+            } finally {
+              setIsSubmitting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const renderStars = (rating) => (
+    <View style={{ flexDirection: "row", gap: 4 }}>
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          size={16}
+          color={i < rating ? "#FBBF24" : "#D1D5DB"}
+          fill={i < rating ? "#FBBF24" : "none"}
+        />
+      ))}
+    </View>
+  );
 
   const current = testimonials[currentIndex];
-  const next = testimonials[(currentIndex + 1) % testimonials.length];
 
   return (
     <ImageBackground
       source={{
         uri: "https://firebasestorage.googleapis.com/v0/b/penned-aae02.appspot.com/o/General%2FtestimonialbgImage.jpg?alt=media&token=bc374504-4a64-4511-b9b2-3f432d76bbcb",
       }}
-      style={styles.testimonialsContainer}
+      style={styles.container}
       resizeMode="cover"
     >
-      <Text style={styles.testimonialsTitle}>HEAR FROM OUR USERS</Text>
-      <Text style={[styles.testimonialsSubtitle, { fontFamily: Fonts.body }]}>
-        Hear from those who already use Mountescrow to power safe and secure
-        payments.
-      </Text>
-      <TouchableOpacity
-        style={styles.testimonialsCta}
-        onPress={() => setShowModal(true)}
-      >
-        <PlusCircle size={18} color="#fff" />
-        <Text style={[styles.testimonialsCtaText, { fontFamily: Fonts.body }]}>
-          Add Your Testimonial
+      <View style={styles.overlay}>
+        <Text style={styles.title}>HEAR FROM OUR USERS</Text>
+        <Text style={[styles.subtitle, { fontFamily: Fonts.body }]}>
+          Hear from those who already use Mountescrow to power safe and secure
+          payments.
         </Text>
-      </TouchableOpacity>
-      {testimonials.length === 0 ? (
-        <View style={styles.testimonialsEmpty}>
-          <Text style={styles.testimonialsEmptyTitle}>No reviews yet.</Text>
-          <Text style={styles.testimonialsEmptyText}>
-            Be the first to share your experience with Mountescrow!
-          </Text>
-        </View>
-      ) : (
-        <View style={styles.testimonialsCarousel}>
-          <Animated.View
-            style={[
-              styles.testimonialsCard,
-              {
-                transform: [
-                  {
-                    translateX: slideAnim.interpolate({
-                      inputRange: [-1, 0],
-                      outputRange: [-400, 0],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            {current && (
-              <>
-                <Image
-                  source={{
-                    uri: current.photoUrl || "https://via.placeholder.com/96",
-                  }}
-                  style={styles.testimonialsAvatar}
-                />
-                <Text style={styles.testimonialsReview}>
-                  {"{"}
-                  {current.review}
-                  {"}"}
-                </Text>
-                <View style={styles.testimonialsStars}>
-                  {renderStars(current.rating)}
-                </View>
-                <Text style={styles.testimonialsName}>
-                  {current.authorName}
-                </Text>
-                <Text style={styles.testimonialsRole}>
-                  {current.authorTitle}
-                </Text>
-              </>
-            )}
-          </Animated.View>
-          {next && (
-            <Animated.View
-              style={[
-                styles.testimonialsNextCard,
-                {
-                  transform: [
-                    {
-                      translateX: nextSlideAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [100, 0],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <Image
-                source={{
-                  uri: next.photoUrl || "https://via.placeholder.com/80",
-                }}
-                style={styles.testimonialsNextAvatar}
-              />
-              <Text style={styles.testimonialsNextReview} numberOfLines={3}>
-                {"{"}
-                {next.review}
-                {"}"}
-              </Text>
-            </Animated.View>
+
+        <TouchableOpacity style={styles.ctaButton} onPress={handleOpenModal}>
+          {userTestimonial ? (
+            <Edit2 size={18} color="#fff" />
+          ) : (
+            <PlusCircle size={18} color="#fff" />
           )}
-        </View>
-      )}
+          <Text style={[styles.ctaText, { fontFamily: Fonts.body }]}>
+            {userTestimonial
+              ? "Update Your Testimonial"
+              : "Add Your Testimonial"}
+          </Text>
+        </TouchableOpacity>
+
+        {testimonials.length === 0 ? (
+          <View style={styles.card}>
+            <Text style={{ color: "#666" }}>No reviews yet.</Text>
+          </View>
+        ) : (
+          current && (
+            <View style={styles.card}>
+              <View style={styles.avatarContainer}>
+                {/* Display Image logic:
+                   1. Try to render Image if photoUrl exists.
+                   2. If it fails (onError) OR no photoUrl, show Initials.
+                */}
+                {current.photoUrl && !imageError ? (
+                  <Image
+                    source={{ uri: current.photoUrl }}
+                    style={styles.avatar}
+                    resizeMode="cover"
+                    onError={(e) => {
+                      console.log("Image Load Error:", e.nativeEvent.error);
+                      setImageError(true);
+                    }}
+                  />
+                ) : (
+                  <View style={styles.initialsAvatar}>
+                    <Text style={styles.initialsText}>
+                      {current.authorName?.charAt(0).toUpperCase() || "U"}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <Text style={[styles.reviewText, { fontFamily: Fonts.body }]}>
+                &quot;{current.review}&quot;
+              </Text>
+
+              <View style={{ alignItems: "center", gap: 6 }}>
+                {renderStars(current.rating)}
+                <View style={{ alignItems: "center" }}>
+                  <Text
+                    style={[styles.authorName, { fontFamily: Fonts.heading }]}
+                  >
+                    {current.authorName}
+                  </Text>
+                  <Text style={[styles.authorRole, { fontFamily: Fonts.body }]}>
+                    {current.authorTitle}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )
+        )}
+      </View>
+
       <Modal visible={showModal} transparent animationType="fade">
-        <View style={styles.testimonialsModalOverlay}>
-          <View style={styles.testimonialsModal}>
-            <TouchableOpacity
-              style={styles.testimonialsClose}
-              onPress={() => setShowModal(false)}
-            >
-              <X size={20} color="#6B7280" />
-            </TouchableOpacity>
-            <Text style={styles.testimonialsModalTitle}>Add Testimonial</Text>
-            <TextInput
-              style={styles.testimonialsInput}
-              placeholder="Your Name"
-              value={formData.authorName}
-              onChangeText={(v) =>
-                setFormData((p) => ({ ...p, authorName: v }))
-              }
-            />
-            <TextInput
-              style={styles.testimonialsInput}
-              placeholder="Your Title (e.g. Buyer, Freelancer)"
-              value={formData.authorTitle}
-              onChangeText={(v) =>
-                setFormData((p) => ({ ...p, authorTitle: v }))
-              }
-            />
-            <TextInput
-              style={[styles.testimonialsInput, styles.testimonialsTextarea]}
-              placeholder="Your Review"
-              value={formData.review}
-              onChangeText={(v) => setFormData((p) => ({ ...p, review: v }))}
-              multiline
-            />
-            <TextInput
-              style={styles.testimonialsInput}
-              placeholder="Rating (1-5)"
-              keyboardType="numeric"
-              value={formData.rating.toString()}
-              onChangeText={(v) =>
-                setFormData((p) => ({
-                  ...p,
-                  rating: Math.min(5, Math.max(1, parseInt(v) || 1)),
-                }))
-              }
-            />
-            <TouchableOpacity style={styles.testimonialsFileButton}>
-              <Text style={styles.testimonialsFileText}>
-                {formData.photo ? "Image Selected" : "Choose Photo"}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.testimonialsSubmit,
-                isSubmitting && styles.testimonialsDisabled,
-              ]}
-            >
-              <Text style={styles.testimonialsSubmitText}>
-                {isSubmitting ? "Submitting..." : "Submit Testimonial"}
-              </Text>
-            </TouchableOpacity>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {userTestimonial ? "Update Review" : "Share Experience"}
+                </Text>
+                <TouchableOpacity onPress={() => setShowModal(false)}>
+                  <X size={24} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Your Name"
+                value={formData.authorName}
+                onChangeText={(t) =>
+                  setFormData({ ...formData, authorName: t })
+                }
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Your Title (e.g. Freelancer)"
+                value={formData.authorTitle}
+                onChangeText={(t) =>
+                  setFormData({ ...formData, authorTitle: t })
+                }
+              />
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Write your review..."
+                multiline
+                value={formData.review}
+                onChangeText={(t) => setFormData({ ...formData, review: t })}
+              />
+
+              <Text style={styles.label}>Rating (1-5)</Text>
+              <View style={styles.ratingRow}>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <TouchableOpacity
+                    key={num}
+                    onPress={() => setFormData({ ...formData, rating: num })}
+                  >
+                    <Star
+                      size={28}
+                      color={num <= formData.rating ? "#FBBF24" : "#E5E7EB"}
+                      fill={num <= formData.rating ? "#FBBF24" : "none"}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Image Preview */}
+              <View style={styles.imagePreviewContainer}>
+                {formData.photo ? (
+                  <Image
+                    source={{ uri: formData.photo.uri }}
+                    style={styles.previewImage}
+                  />
+                ) : userTestimonial?.photoUrl ? (
+                  <Image
+                    source={{ uri: userTestimonial.photoUrl }}
+                    style={styles.previewImage}
+                  />
+                ) : (
+                  <View style={styles.placeholderPreview}>
+                    <ImageIcon size={32} color="#9CA3AF" />
+                    <Text style={styles.placeholderText}>
+                      No photo selected
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <TouchableOpacity
+                style={styles.uploadBtn}
+                onPress={handlePickImage}
+              >
+                <Text style={styles.uploadBtnText}>
+                  {formData.photo
+                    ? "Change Photo"
+                    : userTestimonial?.photoUrl
+                    ? "Update Photo (Optional)"
+                    : "Upload Photo (Optional)"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.submitBtn}
+                onPress={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.submitText}>
+                    {userTestimonial ? "Save Changes" : "Submit Review"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              {userTestimonial && (
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={handleDelete}
+                  disabled={isSubmitting}
+                >
+                  <Trash2 size={18} color="#ef4444" />
+                  <Text style={styles.deleteText}>Delete Review</Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -246,162 +408,217 @@ export default function TestimonialsSection() {
 }
 
 const styles = StyleSheet.create({
-  testimonialsContainer: {
-    paddingVertical: 80,
+  container: {
+    paddingVertical: 60,
+    width: "100%",
+  },
+  overlay: {
     paddingHorizontal: 16,
     alignItems: "center",
   },
-  testimonialsTitle: {
-    color: "#010e5a",
+  title: {
+    fontSize: 28,
     fontWeight: "bold",
-    fontSize: 32,
+    color: "#010e5a",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#4B5563",
     textAlign: "center",
     marginBottom: 24,
+    maxWidth: 300,
+    lineHeight: 20,
   },
-  testimonialsSubtitle: {
-    color: "#6B7280",
-    textAlign: "center",
-    maxWidth: 768,
-    marginBottom: 40,
-    fontSize: 16,
-  },
-  testimonialsCta: {
+  ctaButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FB923C",
+    backgroundColor: "#F97316",
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 999,
-    marginBottom: 40,
+    borderRadius: 30,
+    marginBottom: 32,
+    gap: 8,
+    elevation: 3,
   },
-  testimonialsCtaText: { color: "#fff", marginLeft: 8, fontWeight: "600" },
-  testimonialsEmpty: {
-    backgroundColor: "rgba(255,255,255,0.7)",
-    padding: 40,
-    borderRadius: 16,
-    alignItems: "center",
-    width: "80%",
-    maxWidth: 400,
-  },
-  testimonialsEmptyTitle: {
-    color: "#4B5563",
-    fontWeight: "600",
-    fontSize: 18,
-    marginBottom: 8,
-  },
-  testimonialsEmptyText: {
-    color: "#6B7280",
+  ctaText: {
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 14,
-    textAlign: "center",
   },
-  testimonialsCarousel: {
-    height: 400,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  testimonialsCard: {
+  card: {
     backgroundColor: "#fff",
-    padding: 32,
     borderRadius: 16,
-    width: "80%",
-    maxWidth: 500,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-  },
-  testimonialsAvatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    borderWidth: 4,
-    borderColor: "#1E40AF",
-    marginBottom: 24,
-  },
-  testimonialsReview: {
-    fontStyle: "italic",
-    fontSize: 18,
-    color: "#1F2937",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  testimonialsStars: { flexDirection: "row", marginBottom: 8 },
-  testimonialsName: { color: "#1E40AF", fontWeight: "600", fontSize: 18 },
-  testimonialsRole: { color: "#6B7280", fontSize: 14 },
-  testimonialsNextCard: {
-    position: "absolute",
-    right: 0,
-    backgroundColor: "#fff",
     padding: 24,
-    borderRadius: 16,
-    width: "60%",
-    maxWidth: 350,
+    width: "100%",
+    maxWidth: 340,
+    alignItems: "center",
+    elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    opacity: 0.8,
   },
-  testimonialsNextAvatar: {
+  avatarContainer: {
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    borderWidth: 2,
-    borderColor: "#1E40AF",
-    marginBottom: 16,
+    borderWidth: 3,
+    borderColor: "#010e5a",
+    backgroundColor: "#E5E7EB",
   },
-  testimonialsNextReview: {
-    fontSize: 14,
-    color: "#4B5563",
+  initialsAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: "#010e5a",
+  },
+  initialsText: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#6B7280",
+  },
+  reviewText: {
+    fontSize: 15,
+    color: "#374151",
     fontStyle: "italic",
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 22,
   },
-  testimonialsModalOverlay: {
+  authorName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#010e5a",
+    marginTop: 4,
+  },
+  authorRole: {
+    fontSize: 12,
+    color: "#6B7280",
+  },
+  // Modal Styles
+  modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
-    alignItems: "center",
+    padding: 20,
   },
-  testimonialsModal: {
+  modalContent: {
     backgroundColor: "#fff",
-    padding: 24,
     borderRadius: 16,
-    width: "90%",
-    maxWidth: 450,
+    padding: 20,
+    maxHeight: "90%",
+    width: "100%",
+    maxWidth: 400,
   },
-  testimonialsClose: { position: "absolute", top: 12, right: 12 },
-  testimonialsModalTitle: {
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
     fontSize: 20,
-    fontWeight: "600",
-    color: "#1E40AF",
-    marginBottom: 16,
-    textAlign: "center",
+    fontWeight: "bold",
+    color: "#010e5a",
   },
-  testimonialsInput: {
+  input: {
+    backgroundColor: "#F9FAFB",
     borderWidth: 1,
-    borderColor: "#D1D5DB",
+    borderColor: "#E5E7EB",
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
+    fontSize: 14,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: "top",
+  },
+  label: {
+    fontSize: 14,
+    color: "#374151",
+    marginBottom: 8,
+    fontWeight: "600",
+  },
+  ratingRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 24,
+  },
+  imagePreviewContainer: {
+    width: "100%",
+    height: 150,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  previewImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  placeholderPreview: {
+    alignItems: "center",
+    gap: 8,
+  },
+  placeholderText: {
+    color: "#9CA3AF",
+    fontSize: 12,
+  },
+  uploadBtn: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#003366",
+    borderStyle: "dashed",
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 24,
+    backgroundColor: "#F0F9FF",
+  },
+  uploadBtnText: {
+    color: "#003366",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  submitBtn: {
+    backgroundColor: "#010e5a",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  submitText: {
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
-  testimonialsTextarea: { height: 96, textAlignVertical: "top" },
-  testimonialsFileButton: {
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: 8,
-    padding: 12,
+  deleteBtn: {
+    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
-  },
-  testimonialsFileText: { color: "#4B5563" },
-  testimonialsSubmit: {
-    backgroundColor: "#1E40AF",
     padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
+    gap: 8,
   },
-  testimonialsDisabled: { opacity: 0.6 },
-  testimonialsSubmitText: { color: "#fff", fontWeight: "600" },
+  deleteText: {
+    color: "#ef4444",
+    fontWeight: "600",
+  },
 });

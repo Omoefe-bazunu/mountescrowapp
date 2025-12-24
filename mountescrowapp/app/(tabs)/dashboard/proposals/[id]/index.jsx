@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  RefreshControl, // Added
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -33,20 +34,29 @@ export default function ProposalDetailScreen() {
   const { user } = useAuth();
   const [proposal, setProposal] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // Added state
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const fetchProposal = async () => {
+    try {
+      const p = await getProposalById(id);
+      setProposal(p);
+    } catch (e) {
+      Alert.alert("Error", "Could not load proposal.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const p = await getProposalById(id);
-        setProposal(p);
-      } catch (e) {
-        Alert.alert("Error", "Could not load proposal.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
+    fetchProposal();
+  }, [id]);
+
+  // Added onRefresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchProposal();
+    setRefreshing(false);
   }, [id]);
 
   const toDate = (timestamp) => {
@@ -66,7 +76,7 @@ export default function ProposalDetailScreen() {
     }
   };
 
-  // Logic Ported from Web [cite: 55-124]
+  // Logic Ported from Web
   const isSeller = user?.email === proposal?.sellerEmail;
   const isBuyer =
     user?.uid === proposal?.buyerId || user?.email === proposal?.buyerEmail;
@@ -128,6 +138,9 @@ export default function ProposalDetailScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 40 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      } // Added RefreshControl
     >
       {/* Header Section */}
       <View style={styles.card}>
@@ -198,7 +211,7 @@ export default function ProposalDetailScreen() {
         ))}
       </View>
 
-      {/* Financial Summary [cite: 64-65, 116-118] */}
+      {/* Financial Summary */}
       <View style={styles.summaryCard}>
         <Text style={styles.sectionTitle}>Financial Summary</Text>
         <View style={styles.summaryRow}>

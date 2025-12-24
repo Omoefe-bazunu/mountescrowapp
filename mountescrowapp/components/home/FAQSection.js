@@ -128,7 +128,7 @@ export default function FAQSection() {
 const styles = StyleSheet.create({
   faqContainer: {
     backgroundColor: "#F3F4F6",
-    paddingVertical: 80,
+    paddingVertical: 20,
     paddingHorizontal: 16,
     alignItems: "center",
   },

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   ScrollView,
   View,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   TouchableOpacity,
+  RefreshControl, // Added import
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,6 +30,7 @@ export default function DealDetailScreen() {
   const { user } = useAuth();
   const [deal, setDeal] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // Added state
   const [isProcessing, setIsProcessing] = useState(false);
   const [disputeModalOpen, setDisputeModalOpen] = useState(false);
 
@@ -47,6 +49,13 @@ export default function DealDetailScreen() {
     fetchDeal();
   }, [id]);
 
+  // Added onRefresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchDeal();
+    setRefreshing(false);
+  }, [id]);
+
   const handleFundDeal = async () => {
     if (!deal) return;
 
@@ -60,7 +69,7 @@ export default function DealDetailScreen() {
         "Deal Funded Successfully! Funds deducted and seller notified."
       );
 
-      // Refresh deal data to update UI status [cite: 59, 323]
+      // Refresh deal data to update UI status
       fetchDeal();
     } catch (e) {
       console.error("Funding Error:", e.response?.data || e.message);
@@ -99,7 +108,7 @@ export default function DealDetailScreen() {
   const completed =
     deal.milestones.filter((m) => m.status === "Completed").length || 0;
   const total = deal.milestones.length || 0;
-  const progress = total ? completed / total : 0; // For Progress Bar [cite: 73, 87]
+  const progress = total ? completed / total : 0; // For Progress Bar
 
   const isBuyer = user?.uid === deal.buyerId || user?.email === deal.buyerEmail;
   const isSeller = user?.email === deal.sellerEmail;
@@ -112,8 +121,11 @@ export default function DealDetailScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 80 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      } // Added RefreshControl
     >
-      {/* Header [cite: 84-86] */}
+      {/* Header */}
       <View style={styles.card}>
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
@@ -127,7 +139,7 @@ export default function DealDetailScreen() {
           </View>
         </View>
 
-        {/* Progress Bar [cite: 87] */}
+        {/* Progress Bar */}
         <View style={styles.progressSection}>
           <View style={styles.progressLabelRow}>
             <Text style={styles.progressLabel}>Progress</Text>
@@ -143,7 +155,7 @@ export default function DealDetailScreen() {
         </View>
       </View>
 
-      {/* Countdown Banners [cite: 89-91] */}
+      {/* Countdown Banners */}
       {deal.milestones.map(
         (m, i) =>
           (m.countdownActive || m.countdownCancelledAt) && (
@@ -158,11 +170,11 @@ export default function DealDetailScreen() {
           )
       )}
 
-      {/* Funding Button [cite: 92-94] */}
+      {/* Funding Button */}
       {isBuyer && deal.status === "Awaiting Funding" && (
         <TouchableOpacity
           style={styles.fundButton}
-          onPress={handleFundDeal} // Changed from fetchDeal to handleFundDeal
+          onPress={handleFundDeal}
           disabled={isProcessing}
         >
           {isProcessing ? (
@@ -179,7 +191,7 @@ export default function DealDetailScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Milestones [cite: 95-96] */}
+      {/* Milestones */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Milestones</Text>
         {deal.milestones.map((m, i) => (
@@ -196,7 +208,7 @@ export default function DealDetailScreen() {
         ))}
       </View>
 
-      {/* Raise Dispute [cite: 96-98] */}
+      {/* Raise Dispute */}
       {canRaiseDispute && (
         <TouchableOpacity
           style={styles.disputeButton}
@@ -207,7 +219,7 @@ export default function DealDetailScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Financial Summary Breakdown [cite: 99-108] */}
+      {/* Financial Summary Breakdown */}
       <View style={styles.card}>
         <Text style={styles.summaryTitle}>Summary</Text>
         <View style={styles.summaryRow}>

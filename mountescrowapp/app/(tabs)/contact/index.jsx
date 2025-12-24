@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,21 +7,88 @@ import {
   ImageBackground,
   ScrollView,
   StyleSheet,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Phone, Mail, MapPin } from "lucide-react-native";
 import { Fonts } from "../../../constants/Fonts";
+import { sendContactMessage } from "../../../src/services/contact.service";
 
 const contacts = [
   { Icon: Phone, text: "+2348087480502" },
   { Icon: Mail, text: "support@mountescrow.com" },
-  { Icon: MapPin, text: "House A2, Basic Estate, Lokogoma,\nAbuja, Nigeria." },
+  {
+    Icon: MapPin,
+    text: "House A2, Basic Estate, Lokogoma,\nAbuja, Nigeria.",
+  },
 ];
 
 export default function ContactUsPage() {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  // Helper to update form state
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async () => {
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.message) {
+      return Alert.alert("Error", "Please fill in all required fields.");
+    }
+
+    setLoading(true);
+
+    try {
+      // Call the service to send data
+      await sendContactMessage(formData);
+
+      Alert.alert("Message Sent!", "We'll get back to you soon.", [
+        {
+          text: "OK",
+          onPress: () =>
+            setFormData({ name: "", email: "", phone: "", message: "" }),
+        },
+      ]);
+    } catch (err) {
+      console.error("Contact submission error:", err);
+      const errorMessage =
+        err.response?.data?.error || err.message || "Failed to send message";
+      Alert.alert("Error", errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper to map UI labels to state keys
+  const getFieldKey = (label) => {
+    if (label === "Name") return "name";
+    if (label === "Email") return "email";
+    return "phone";
+  };
+
+  const getPlaceholder = (label) => {
+    if (label === "Name") return "E.g. John Doe";
+    if (label === "Email") return "E.g. johndoe@gmail.com";
+    return "E.g. +2349200399920";
+  };
+
+  const getKeyboardType = (label) => {
+    if (label === "Email") return "email-address";
+    if (label.includes("Phone")) return "phone-pad";
+    return "default";
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.card}>
-        {/* Left */}
+        {/* Left Section (Contact Info) */}
         <View style={styles.left}>
           <ImageBackground
             source={{
@@ -31,7 +98,7 @@ export default function ContactUsPage() {
           >
             <View style={styles.overlay} />
           </ImageBackground>
-          <View style={[styles.content, { fontFamily: Fonts.body }]}>
+          <View style={styles.content}>
             <Text style={[styles.title, { fontFamily: Fonts.body }]}>
               Contact Details
             </Text>
@@ -54,7 +121,7 @@ export default function ContactUsPage() {
           </View>
         </View>
 
-        {/* Right */}
+        {/* Right Section (Form) */}
         <View style={styles.right}>
           <View style={styles.form}>
             {["Name", "Email", "Phone (Preferably WhatsApp)"].map(
@@ -64,18 +131,19 @@ export default function ContactUsPage() {
                     {label}
                   </Text>
                   <TextInput
-                    placeholder={
-                      label === "Name"
-                        ? "E.g. John Doe"
-                        : label === "Email"
-                        ? "E.g. johndoe@gmail.com"
-                        : "E.g. +2349200399920"
-                    }
+                    placeholder={getPlaceholder(label)}
                     style={[styles.input, { fontFamily: Fonts.body }]}
+                    value={formData[getFieldKey(label)]}
+                    onChangeText={(text) =>
+                      handleChange(getFieldKey(label), text)
+                    }
+                    keyboardType={getKeyboardType(label)}
+                    autoCapitalize={label === "Email" ? "none" : "words"}
                   />
                 </View>
               )
             )}
+
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { fontFamily: Fonts.body }]}>
                 Message
@@ -88,12 +156,23 @@ export default function ContactUsPage() {
                   styles.textarea,
                   { fontFamily: Fonts.body },
                 ]}
+                value={formData.message}
+                onChangeText={(text) => handleChange("message", text)}
               />
             </View>
-            <TouchableOpacity style={styles.button}>
-              <Text style={[styles.buttonText, { fontFamily: Fonts.body }]}>
-                Send Message
-              </Text>
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text style={[styles.buttonText, { fontFamily: Fonts.body }]}>
+                  Send Message
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -127,6 +206,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bgImage: { ...StyleSheet.absoluteFillObject },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,50,0.8)", // Matches web design overlay
+  },
   content: { position: "relative", alignItems: "center" },
   title: {
     fontSize: 28,
@@ -170,6 +253,9 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 6,
     alignItems: "center",
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: { color: "white", fontWeight: "500" },
 });

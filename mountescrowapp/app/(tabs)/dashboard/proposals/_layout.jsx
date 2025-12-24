@@ -17,7 +17,7 @@ export default function ProposalsLayout() {
 
       {/* 3. Dynamic ID Route - Catch-all for anything else */}
       <Stack.Screen
-        name="[id]/index"
+        name="[id]"
         options={{
           headerShown: true,
           title: "Proposal Details",

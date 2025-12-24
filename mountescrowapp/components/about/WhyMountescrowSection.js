@@ -99,7 +99,7 @@ export default function WhyMountescrowSection() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
-    paddingVertical: 64,
+    paddingVertical: 20,
     paddingHorizontal: 16,
   },
   content: {

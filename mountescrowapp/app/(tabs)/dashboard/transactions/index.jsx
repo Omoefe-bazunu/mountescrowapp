@@ -8,16 +8,69 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
-  RefreshControl, // Added for pull-to-refresh
+  RefreshControl,
 } from "react-native";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import apiClient from "../../../../src/api/apiClient";
 
+// ✅ FIX: Moved renderTransaction OUTSIDE the component
+// This prevents the FlatList from re-rendering every row when state changes (like searching)
+const renderTransaction = ({ item }) => {
+  const isCredit =
+    item.type === "credit" ||
+    item.type === "DEPOSIT" ||
+    item.type === "MILESTONE_PAYMENT" ||
+    item.direction === "incoming";
+
+  return (
+    <View style={styles.txCard}>
+      <View style={styles.txMain}>
+        <View style={styles.iconContainer}>
+          <Ionicons
+            name={isCredit ? "arrow-down-circle" : "arrow-up-circle"}
+            size={32}
+            color={isCredit ? "#16a34a" : "#dc2626"}
+          />
+        </View>
+
+        <View style={styles.txDetails}>
+          <Text style={styles.txDescription}>
+            {item.description || "Transaction"}
+          </Text>
+          <Text style={styles.txDate}>
+            {item.createdAt
+              ? format(new Date(item.createdAt), "MMM dd, yyyy • p")
+              : "N/A"}
+          </Text>
+        </View>
+
+        <View style={styles.txAmount}>
+          <Text
+            style={[styles.amountText, isCredit ? styles.green : styles.red]}
+          >
+            {isCredit ? "+" : "-"}₦
+            {Number(item.amount || 0).toLocaleString("en-NG", {
+              minimumFractionDigits: 2,
+            })}
+          </Text>
+          <View
+            style={[styles.badge, styles[`badge${item.status?.toUpperCase()}`]]}
+          >
+            <Text style={styles.badgeText}>
+              {item.status?.toLowerCase() || "pending"}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
 export default function TransactionsScreen() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false); // New state
+  const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -39,13 +92,11 @@ export default function TransactionsScreen() {
     }
   };
 
-  // Pull-to-refresh handler
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchTransactions(true);
   }, []);
 
-  // Logic ported from Next.js [cite: 531]
   const filteredTransactions = useMemo(() => {
     return transactions.filter((tx) => {
       const searchMatch =
@@ -62,61 +113,6 @@ export default function TransactionsScreen() {
       return searchMatch && typeMatch && statusMatch;
     });
   }, [transactions, searchTerm, typeFilter, statusFilter]);
-
-  const renderTransaction = ({ item }) => {
-    // Logic for determining direction [cite: 531]
-    const isCredit =
-      item.type === "credit" ||
-      item.type === "DEPOSIT" ||
-      item.type === "MILESTONE_PAYMENT" ||
-      item.direction === "incoming";
-
-    return (
-      <View style={styles.txCard}>
-        <View style={styles.txMain}>
-          <View style={styles.iconContainer}>
-            <Ionicons
-              name={isCredit ? "arrow-down-circle" : "arrow-up-circle"}
-              size={32}
-              color={isCredit ? "#16a34a" : "#dc2626"}
-            />
-          </View>
-
-          <View style={styles.txDetails}>
-            <Text style={styles.txDescription}>
-              {item.description || "Transaction"}
-            </Text>
-            <Text style={styles.txDate}>
-              {item.createdAt
-                ? format(new Date(item.createdAt), "MMM dd, yyyy • p")
-                : "N/A"}
-            </Text>
-          </View>
-
-          <View style={styles.txAmount}>
-            <Text
-              style={[styles.amountText, isCredit ? styles.green : styles.red]}
-            >
-              {isCredit ? "+" : "-"}₦
-              {Number(item.amount || 0).toLocaleString("en-NG", {
-                minimumFractionDigits: 2,
-              })}
-            </Text>
-            <View
-              style={[
-                styles.badge,
-                styles[`badge${item.status?.toUpperCase()}`],
-              ]}
-            >
-              <Text style={styles.badgeText}>
-                {item.status?.toLowerCase() || "pending"}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -175,8 +171,8 @@ export default function TransactionsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={["#003366"]} // Android
-              tintColor="#003366" // iOS
+              colors={["#003366"]}
+              tintColor="#003366"
             />
           }
           ListEmptyComponent={
@@ -185,6 +181,10 @@ export default function TransactionsScreen() {
               <Text style={styles.emptyText}>No transactions found.</Text>
             </View>
           }
+          // Optimization props to further prevent crashes on long lists
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
         />
       )}
     </View>
@@ -244,20 +244,20 @@ const styles = StyleSheet.create({
   txMain: { flexDirection: "row", alignItems: "center" },
   iconContainer: { marginRight: 12 },
   txDetails: {
-    flex: 1, // Added to allow text to take remaining space and wrap
-    marginRight: 10, // Safety gap
+    flex: 1,
+    marginRight: 10,
   },
   txDescription: {
     fontSize: 15,
     fontWeight: "700",
     color: "#333",
     marginBottom: 4,
-    flexWrap: "wrap", // Ensures text breaks to new lines
+    flexWrap: "wrap",
   },
   txDate: { fontSize: 12, color: "#999" },
   txAmount: {
     alignItems: "flex-end",
-    flexShrink: 0, // Prevents amount from being compressed
+    flexShrink: 0,
   },
   amountText: { fontSize: 15, fontWeight: "bold", marginBottom: 6 },
   green: { color: "#16a34a" },
@@ -278,5 +278,10 @@ const styles = StyleSheet.create({
   badgeFAILED: { backgroundColor: "#fee2e2" },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyContainer: { alignItems: "center", marginTop: 80 },
-  emptyText: { marginTop: 16, color: "#999", fontSize: 16, fontWeight: "500" },
+  emptyText: {
+    marginTop: 16,
+    color: "#999",
+    fontSize: 16,
+    fontWeight: "500",
+  },
 });
