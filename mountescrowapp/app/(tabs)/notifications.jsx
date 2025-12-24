@@ -23,7 +23,7 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState("all"); // all, unread, read
+  const [filter, setFilter] = useState("all");
   const router = useRouter();
 
   const loadData = useCallback(async (reset = false) => {
@@ -32,7 +32,7 @@ export default function NotificationsScreen() {
       const data = await getNotifications(1, 50);
       setNotifications(data.notifications || []);
     } catch (e) {
-      Alert.alert("Error", "Failed to load notifications");
+      console.log(e);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -48,19 +48,95 @@ export default function NotificationsScreen() {
     loadData();
   };
 
-  const handleAction = (item) => {
-    // Replicating web link handling [cite: 2005-2006, 2050]
-    if (!item.read) markNotificationAsRead(item.id).catch(() => {});
+  // ✅ UPDATED: Navigation Handler
+  const handleAction = async (item) => {
+    // 1. Optimistic Update (Mark read in UI immediately)
+    if (!item.read) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, read: true } : n))
+      );
+      // Call API in background
+      markNotificationAsRead(item.id).catch(() => {});
+    }
 
-    // Convert web links like '/deals/123' to mobile routes
-    const route = item.link.startsWith("/") ? item.link : `/${item.link}`;
-    router.push(route);
+    // 2. Parse Link & Navigate
+    if (!item.link) return;
+
+    // Remove leading slash if exists (e.g. "/proposals/123" -> "proposals/123")
+    const cleanPath = item.link.startsWith("/")
+      ? item.link.slice(1)
+      : item.link;
+    const [category, id] = cleanPath.split("/");
+
+    // Map Web Categories to Mobile Routes
+    // Adjust these paths if your file structure is different
+    switch (category) {
+      case "proposals":
+        // Maps 'proposals/123' -> '/dashboard/proposals/123'
+        router.push(`/dashboard/proposals/${id}`);
+        break;
+      case "deals":
+        router.push(`/dashboard/deals/${id}`);
+        break;
+      case "disputes":
+        router.push(`/dashboard/disputes`);
+        break;
+      case "wallet":
+        router.push("/dashboard/wallet");
+        break;
+      default:
+        // Fallback for unknown routes
+        router.push(`/${cleanPath}`);
+    }
   };
 
-  const formatDate = (ts) => {
-    if (!ts) return "N/A";
-    const date = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
-    return isNaN(date.getTime()) ? "N/A" : format(date, "MMM dd, h:mm a");
+  const handleMarkAllRead = async () => {
+    try {
+      setLoading(true);
+      await markAllNotificationsAsRead();
+      await loadData();
+    } catch (e) {
+      Alert.alert("Error", "Failed to mark notifications as read");
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    Alert.alert(
+      "Delete Notification",
+      "Are you sure you want to remove this?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setNotifications((prev) => prev.filter((n) => n.id !== id));
+              await deleteNotification(id);
+            } catch (e) {
+              Alert.alert("Error", "Failed to delete");
+              loadData();
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    let date;
+    if (timestamp._seconds) {
+      date = new Date(timestamp._seconds * 1000);
+    } else if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else if (timestamp.toDate) {
+      date = timestamp.toDate();
+    } else {
+      date = new Date(timestamp);
+    }
+    return date && !isNaN(date) ? format(date, "MMM dd, p") : "N/A";
   };
 
   const filtered = notifications.filter((n) => {
@@ -73,17 +149,23 @@ export default function NotificationsScreen() {
     <TouchableOpacity
       style={[styles.card, !item.read && styles.unreadCard]}
       onPress={() => handleAction(item)}
+      activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
         <Text style={styles.typeIcon}>{getIcon(item.type)}</Text>
         <View style={styles.headerText}>
-          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.title} numberOfLines={1}>
+            {item.title}
+          </Text>
           <Text style={styles.date}>{formatDate(item.createdAt)}</Text>
         </View>
+
         <TouchableOpacity
-          onPress={() => deleteNotification(item.id).then(() => loadData())}
+          style={styles.deleteBtn}
+          onPress={() => handleDelete(item.id)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="trash-outline" size={18} color="#999" />
+          <Ionicons name="trash-outline" size={20} color="#ef4444" />
         </TouchableOpacity>
       </View>
       <Text style={styles.message} numberOfLines={2}>
@@ -94,6 +176,15 @@ export default function NotificationsScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Notifications</Text>
+        <TouchableOpacity onPress={handleMarkAllRead}>
+          <Text style={styles.markReadText}>Mark all as read</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Filter Tabs */}
       <View style={styles.filterRow}>
         {["all", "unread", "read"].map((f) => (
           <TouchableOpacity
@@ -113,6 +204,7 @@ export default function NotificationsScreen() {
         ))}
       </View>
 
+      {/* List */}
       {loading ? (
         <ActivityIndicator
           style={{ marginTop: 50 }}
@@ -124,6 +216,7 @@ export default function NotificationsScreen() {
           data={filtered}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 20 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -149,37 +242,74 @@ const getIcon = (type) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f3f4f6" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#003366",
+  },
+  markReadText: {
+    fontSize: 14,
+    color: "#f97316",
+    fontWeight: "600",
+  },
   filterRow: {
     flexDirection: "row",
-    padding: 10,
-    backgroundColor: "#fff",
+    padding: 12,
     gap: 10,
   },
   filterBtn: {
     paddingVertical: 6,
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#e5e7eb",
+    backgroundColor: "#fff",
   },
   activeFilter: { backgroundColor: "#003366", borderColor: "#003366" },
   filterText: { fontSize: 12, color: "#666", fontWeight: "600" },
   activeFilterText: { color: "#fff" },
   card: {
     backgroundColor: "#fff",
-    marginHorizontal: 12,
-    marginTop: 10,
-    padding: 15,
-    borderRadius: 10,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    padding: 16,
+    borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: "#ddd",
+    borderLeftColor: "#e5e7eb",
+    elevation: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   unreadCard: { borderLeftColor: "#f97316", backgroundColor: "#fff7ed" },
-  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  typeIcon: { fontSize: 20, marginRight: 10 },
-  headerText: { flex: 1 },
-  title: { fontSize: 15, fontWeight: "bold", color: "#333" },
-  date: { fontSize: 11, color: "#999", marginTop: 2 },
-  message: { fontSize: 13, color: "#666", lineHeight: 18 },
-  empty: { textAlign: "center", marginTop: 100, color: "#999" },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  typeIcon: { fontSize: 20, marginRight: 12, marginTop: 2 },
+  headerText: { flex: 1, marginRight: 8 },
+  title: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#1f2937",
+    marginBottom: 4,
+  },
+  date: { fontSize: 11, color: "#9ca3af" },
+  deleteBtn: {
+    padding: 4,
+  },
+  message: { fontSize: 14, color: "#4b5563", lineHeight: 20 },
+  empty: { textAlign: "center", marginTop: 100, color: "#9ca3af" },
 });

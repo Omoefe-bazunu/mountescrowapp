@@ -129,15 +129,13 @@ export default function CreateProposalScreen() {
     setLoading(true);
 
     try {
-      // 1. Retrieve the token (Change 'userToken' to whatever key you used at Login)
       const token = await SecureStore.getItemAsync("userToken");
-
       if (!token) {
         Alert.alert("Session Expired", "Please log in again.");
         return router.replace("/login");
       }
 
-      // 2. Prepare data
+      // Format milestones for the backend
       const milestones = values.milestones.map((m) => ({
         title: m.title,
         amount: Number(m.amount),
@@ -145,7 +143,7 @@ export default function CreateProposalScreen() {
         dueDate: m.dueDate.toISOString(),
       }));
 
-      // 3. Pass the token to the service
+      // Send data to the updated service
       const response = await createProposal(
         {
           projectTitle: values.projectTitle,
@@ -156,7 +154,7 @@ export default function CreateProposalScreen() {
           totalAmount: totals.totalAmount,
           escrowFee: totals.totalFeeWithVAT,
           escrowFeePayer: Number(values.escrowFeePayer),
-          files: projectFiles,
+          files: projectFiles, // Pass the array of file objects from state [cite: 29]
         },
         token
       );

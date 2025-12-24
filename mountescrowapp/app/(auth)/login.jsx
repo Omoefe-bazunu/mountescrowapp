@@ -103,7 +103,7 @@ export default function LoginScreen() {
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
-                  placeholder="raniem57@gmail.com"
+                  placeholder="johndoe@gmail.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />

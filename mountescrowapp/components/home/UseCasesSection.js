@@ -52,7 +52,7 @@ export default function UseCasesSection() {
     },
     {
       image:
-        "https://firebasestorage.googleapis.com/v0/b/penned-aae02.appspot.com/o/General%2FGemini_Generated_Image_smij1dsmij1dsmij%20(1).png?alt=media&token=7557047c-7a80-4c45-aa06-cad965f8f95e",
+        "https://firebasestorage.googleapis.com/v0/b/penned-aae02.appspot.com/o/General%2Fapi.png?alt=media&token=3c637d56-c151-4c19-869c-577437d42cdb",
       title: "B2B ESCROW API INTEGRATION",
       text: "Integrate Mountescrow escrow service into your business platform to securely safeguard funds until specific conditions are met. Our B2B API is highly customizable to meet unique needs of diverse businesses and scalable to accommodate growth.",
       buttonText: "Coming Soon",

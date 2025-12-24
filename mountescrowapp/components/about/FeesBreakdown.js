@@ -1,20 +1,10 @@
 // components/about/FeesBreakdown.js
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Animated,
-} from "react-native";
-import { ChevronDown, ChevronUp } from "lucide-react-native";
+import { View, Text, StyleSheet, ScrollView, Animated } from "react-native";
 import { Fonts } from "../../constants/Fonts";
 
 export default function FeesBreakdown() {
-  const [showTable, setShowTable] = useState(false);
   const [inView, setInView] = useState(false);
-
   const [fadeAnim] = useState(() => new Animated.Value(0));
   const [slideAnim] = useState(() => new Animated.Value(60));
 
@@ -110,56 +100,36 @@ export default function FeesBreakdown() {
           <Text style={styles.bold}>10%</Text> for smaller deals and decreases
           to as low as <Text style={styles.bold}>1%</Text> for ultra-high-value
           transactions. The fee can be paid entirely by one party or split
-          between the buyer and seller at varying percentages, offering
-          flexibility and fairness. Our pricing is among the most competitive in
-          the industry.
+          between the buyer and seller at varying percentages.
         </Text>
 
-        {/* Pricing Structure Toggle */}
-        <TouchableOpacity
-          style={styles.toggleButton}
-          onPress={() => setShowTable(!showTable)}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.toggleText, { fontFamily: Fonts.body }]}>
-            {showTable ? "Hide" : "View"} Pricing Structure
-          </Text>
-          {showTable ? (
-            <ChevronUp size={20} color="#010e5a" />
-          ) : (
-            <ChevronDown size={20} color="#010e5a" />
-          )}
-        </TouchableOpacity>
-
-        {/* Pricing Table */}
-        {showTable && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.table}>
+        {/* Pricing Table Card */}
+        <View style={styles.tableCard}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+            <View>
               {/* Table Header */}
-              <View style={styles.tableRow}>
-                <View style={[styles.tableCell, styles.headerCell]}>
+              <View style={[styles.tableRow, styles.headerRow]}>
+                <View style={[styles.tableCell, styles.colRange]}>
                   <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Deal Value (₦)
+                    Deal Value
                   </Text>
                 </View>
-                <View style={[styles.tableCell, styles.headerCell]}>
+                <View style={[styles.tableCell, styles.colFee]}>
                   <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Buyer Fee
+                    Buyer
                   </Text>
                 </View>
-                <View style={[styles.tableCell, styles.headerCell]}>
+                <View style={[styles.tableCell, styles.colFee]}>
                   <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Seller Fee
+                    Seller
                   </Text>
                 </View>
-                <View style={[styles.tableCell, styles.headerCell]}>
+                <View style={[styles.tableCell, styles.colFee]}>
                   <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Total Fee
+                    Total
                   </Text>
                 </View>
-                <View
-                  style={[styles.tableCell, styles.headerCell, styles.wideCell]}
-                >
+                <View style={[styles.tableCell, styles.colRationale]}>
                   <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
                     Strategic Rationale
                   </Text>
@@ -169,28 +139,46 @@ export default function FeesBreakdown() {
               {/* Table Body */}
               {pricingStructure.map((tier, index) => (
                 <View key={index} style={styles.tableRow}>
-                  <View style={styles.tableCell}>
-                    <Text style={[styles.cellText, { fontFamily: Fonts.body }]}>
+                  <View style={[styles.tableCell, styles.colRange]}>
+                    <Text
+                      style={[
+                        styles.cellText,
+                        styles.blueText,
+                        { fontFamily: Fonts.body },
+                      ]}
+                    >
                       {tier.range}
                     </Text>
                   </View>
-                  <View style={styles.tableCell}>
+                  <View style={[styles.tableCell, styles.colFee]}>
                     <Text style={[styles.cellText, { fontFamily: Fonts.body }]}>
                       {tier.buyerFee}
                     </Text>
                   </View>
-                  <View style={styles.tableCell}>
+                  <View style={[styles.tableCell, styles.colFee]}>
                     <Text style={[styles.cellText, { fontFamily: Fonts.body }]}>
                       {tier.sellerFee}
                     </Text>
                   </View>
-                  <View style={styles.tableCell}>
-                    <Text style={[styles.cellText, { fontFamily: Fonts.body }]}>
+                  <View style={[styles.tableCell, styles.colFee]}>
+                    <Text
+                      style={[
+                        styles.cellText,
+                        styles.bold,
+                        { fontFamily: Fonts.body },
+                      ]}
+                    >
                       {tier.totalFee}
                     </Text>
                   </View>
-                  <View style={[styles.tableCell, styles.wideCell]}>
-                    <Text style={[styles.cellText, { fontFamily: Fonts.body }]}>
+                  <View style={[styles.tableCell, styles.colRationale]}>
+                    <Text
+                      style={[
+                        styles.cellText,
+                        styles.grayText,
+                        { fontFamily: Fonts.body },
+                      ]}
+                    >
                       {tier.rationale}
                     </Text>
                   </View>
@@ -198,35 +186,33 @@ export default function FeesBreakdown() {
               ))}
             </View>
           </ScrollView>
-        )}
-
-        {/* Payment Options */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment options for buyers</Text>
-          {paymentOptions.map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <Text style={styles.bullet}>•</Text>
-              <Text style={[styles.listText, { fontFamily: Fonts.body }]}>
-                {item}
-              </Text>
-            </View>
-          ))}
         </View>
 
-        {/* Disbursement Options */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Disbursement options for sellers and brokers
-          </Text>
-          <Text style={[styles.paragraph, { fontFamily: Fonts.body }]}>
-            When a transaction begins, sellers and brokers can choose how they
-            would like to receive their funds. Once all terms are fulfilled and
-            verified, Mountescrow credits the wallet of the seller. From there,
-            the seller can easily request a withdrawal. Withdrawal processing
-            follows the same timeline as standard transactions involving shared
-            escrow fees. All agreed fees are deducted transparently, ensuring
-            full accountability at every stage of the process.
-          </Text>
+        {/* Info Sections */}
+        <View style={styles.infoContainer}>
+          {/* Payment Options */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Payment options for buyers</Text>
+            {paymentOptions.map((item, index) => (
+              <View key={index} style={styles.listItem}>
+                <Text style={styles.bullet}>•</Text>
+                <Text style={[styles.listText, { fontFamily: Fonts.body }]}>
+                  {item}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Disbursement Options */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Disbursement for sellers</Text>
+            <Text style={[styles.paragraph, { fontFamily: Fonts.body }]}>
+              When a transaction begins, sellers and brokers can choose how they
+              would like to receive their funds. Once all terms are fulfilled
+              and verified, Mountescrow credits the wallet of the seller. From
+              there, the seller can easily request a withdrawal.
+            </Text>
+          </View>
         </View>
       </View>
     </Animated.View>
@@ -236,68 +222,65 @@ export default function FeesBreakdown() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#010e5a",
-    paddingVertical: 64,
-    paddingHorizontal: 16,
+    paddingVertical: 48,
+    paddingHorizontal: 20,
   },
   content: {
-    maxWidth: 1280,
     width: "100%",
-    alignSelf: "center",
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 16,
+    fontFamily: Fonts.heading, // Assuming you have a heading font
   },
   paragraph: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#fff",
-    marginBottom: 16,
+    color: "rgba(255,255,255,0.9)",
+    marginBottom: 24,
   },
   bold: {
     fontWeight: "bold",
   },
-  toggleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  // Table Styles
+  tableCard: {
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 24,
-    maxWidth: 250,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 40,
+    elevation: 4, // Android shadow
+    shadowColor: "#000", // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  toggleText: {
-    fontSize: 16,
-    color: "#010e5a",
-    fontWeight: "600",
-  },
-  table: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 32,
+  headerRow: {
+    backgroundColor: "#F8FAFC",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
   },
   tableRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-    paddingVertical: 12,
+    borderBottomColor: "#F1F5F9",
+    alignItems: "stretch", // Ensures cells stretch to fill row height
   },
   tableCell: {
-    width: 120,
-    paddingHorizontal: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     justifyContent: "center",
   },
-  wideCell: {
-    width: 250,
+  // Column Widths
+  colRange: {
+    width: 140,
   },
-  headerCell: {
-    backgroundColor: "#F3F4F6",
+  colFee: {
+    width: 80,
+  },
+  colRationale: {
+    width: 250,
   },
   headerText: {
     fontSize: 14,
@@ -306,32 +289,43 @@ const styles = StyleSheet.create({
   },
   cellText: {
     fontSize: 14,
-    color: "#374151",
+    color: "#334155",
+    lineHeight: 20,
   },
-  section: {
-    marginTop: 32,
+  blueText: {
+    color: "#010e5a",
+    fontWeight: "600",
+  },
+  grayText: {
+    color: "#64748B",
+  },
+  // Info Sections
+  infoContainer: {
+    gap: 16, // Works in newer React Native versions, fallback to marginTop in section if needed
   },
   sectionTitle: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 16,
+    fontFamily: Fonts.heading,
   },
   listItem: {
     flexDirection: "row",
-    marginBottom: 8,
-    paddingRight: 16,
+    marginBottom: 12,
+    alignItems: "flex-start", // Aligns bullet with top of text
+    paddingRight: 8,
   },
   bullet: {
-    fontSize: 16,
+    fontSize: 20,
     color: "#fff",
-    marginRight: 8,
-    fontWeight: "bold",
+    marginRight: 12,
+    lineHeight: 24,
   },
   listText: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#fff",
-    flex: 1,
+    color: "rgba(255,255,255,0.9)",
+    flex: 1, // Important: prevents text from overflowing screen width
   },
 });

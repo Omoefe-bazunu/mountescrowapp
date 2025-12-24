@@ -1,29 +1,130 @@
 // components/about/PoliciesSection.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Linking,
-  ScrollView,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
+import * as DocumentPicker from "expo-document-picker";
+import { FilePlus, Trash2, FileText } from "lucide-react-native";
 import { Fonts } from "../../constants/Fonts";
+import {
+  getPolicies,
+  uploadPolicyPdf,
+  deletePolicyPdf,
+} from "../../src/services/policies.service";
+import apiClient from "../../src/api/apiClient"; // Import your API client
+
+// Match the list from server.js
+const ADMIN_EMAILS = ["raniem57@gmail.com", "mountescrow@gmail.com"];
 
 export default function PoliciesSection() {
-  const [activeTab, setActiveTab] = useState("Refund & Privacy Policy");
+  const [activeTab, setActiveTab] = useState("");
+  const [policyData, setPolicyData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const policyData = {
-    "Refund & Privacy Policy": {
-      summary:
-        "Mountescrow does not sell or share user data with third parties. We respect your privacy and uphold data protection regulations. We also have a flexible Refund policy that allows for compensation of either parties to a transaction in the event of a dispute.",
-      pdfUrl: "https://mountescrow.com/policies/refund-privacy.pdf", // Replace with actual URL
-    },
-    "Terms of Use": {
-      summary:
-        "These Terms of Use govern your use and participation in Mountescrow's services. Please read carefully to understand your rights and obligations when using our platform.",
-      pdfUrl: "https://mountescrow.com/policies/terms-of-use.pdf", // Replace with actual URL
-    },
+  useEffect(() => {
+    checkAdminStatus();
+    loadPolicies();
+  }, []);
+
+  // UPDATED: Fetch user from API to verify Admin status reliably
+  const checkAdminStatus = async () => {
+    try {
+      const response = await apiClient.get("auth/check");
+      const user = response.data.user;
+
+      console.log("Logged in as:", user.email); // Debug log
+
+      if (user && ADMIN_EMAILS.includes(user.email)) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (e) {
+      console.log("Error checking admin status:", e);
+      setIsAdmin(false);
+    }
+  };
+
+  const loadPolicies = async () => {
+    setLoading(true);
+    const data = await getPolicies();
+    setPolicyData(data);
+
+    // Set default tab if not set
+    if (!activeTab && Object.keys(data).length > 0) {
+      setActiveTab(Object.keys(data)[0]);
+    } else if (activeTab && !data[activeTab]) {
+      setActiveTab(Object.keys(data)[0] || "");
+    }
+    setLoading(false);
+  };
+
+  const handleUpload = async () => {
+    if (!activeTab) return;
+
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf",
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const file = result.assets[0];
+
+      // Validate PDF type
+      if (
+        file.mimeType !== "application/pdf" &&
+        !file.name.toLowerCase().endsWith(".pdf")
+      ) {
+        return Alert.alert("Error", "Only PDF files are allowed");
+      }
+
+      setActionLoading(true);
+      await uploadPolicyPdf(activeTab, file);
+      Alert.alert("Success", "Policy PDF uploaded successfully");
+      await loadPolicies();
+    } catch (error) {
+      Alert.alert("Upload Failed", error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!activeTab) return;
+
+    Alert.alert(
+      "Delete Policy PDF",
+      `Are you sure you want to delete the PDF for ${activeTab}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setActionLoading(true);
+              await deletePolicyPdf(activeTab);
+              Alert.alert("Success", "PDF deleted successfully");
+              await loadPolicies();
+            } catch (error) {
+              Alert.alert("Delete Failed", error.message);
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleOpenPDF = async (url) => {
@@ -32,12 +133,22 @@ export default function PoliciesSection() {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        console.log("Cannot open URL: " + url);
+        Alert.alert("Error", "Cannot open this URL");
       }
     } catch (error) {
       console.error("Error opening URL:", error);
     }
   };
+
+  if (loading && Object.keys(policyData).length === 0) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#010e5a" />
+      </View>
+    );
+  }
+
+  const currentPolicy = policyData[activeTab];
 
   return (
     <View style={styles.container}>
@@ -48,7 +159,7 @@ export default function PoliciesSection() {
           and efficient.
         </Text>
 
-        {/* Tabs */}
+        {/* Dynamic Tabs */}
         <View style={styles.tabsContainer}>
           {Object.keys(policyData).map((key) => (
             <TouchableOpacity
@@ -69,24 +180,66 @@ export default function PoliciesSection() {
           ))}
         </View>
 
-        {/* Content */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{activeTab}</Text>
-          <Text style={[styles.cardText, { fontFamily: Fonts.body }]}>
-            {policyData[activeTab].summary}
-          </Text>
+        {/* Content Card */}
+        {currentPolicy && (
+          <View style={styles.card}>
+            <View style={styles.headerRow}>
+              <Text style={styles.cardTitle}>{activeTab}</Text>
 
-          {policyData[activeTab].pdfUrl && (
-            <TouchableOpacity
-              style={styles.pdfButton}
-              onPress={() => handleOpenPDF(policyData[activeTab].pdfUrl)}
-            >
-              <Text style={[styles.pdfButtonText, { fontFamily: Fonts.body }]}>
-                View Full {activeTab} PDF
+              {/* Admin Controls */}
+              {isAdmin && (
+                <View style={styles.adminControls}>
+                  {actionLoading ? (
+                    <ActivityIndicator size="small" color="#010e5a" />
+                  ) : (
+                    <>
+                      <TouchableOpacity
+                        onPress={handleUpload}
+                        style={styles.iconBtn}
+                      >
+                        <FilePlus size={24} color="#010e5a" />
+                      </TouchableOpacity>
+
+                      {currentPolicy.pdfUrl && (
+                        <TouchableOpacity
+                          onPress={handleDelete}
+                          style={styles.iconBtn}
+                        >
+                          <Trash2 size={24} color="#ef4444" />
+                        </TouchableOpacity>
+                      )}
+                    </>
+                  )}
+                </View>
+              )}
+            </View>
+
+            <Text style={[styles.cardText, { fontFamily: Fonts.body }]}>
+              {currentPolicy.summary}
+            </Text>
+
+            {/* View PDF Button */}
+            {currentPolicy.pdfUrl ? (
+              <TouchableOpacity
+                style={styles.pdfButton}
+                onPress={() => handleOpenPDF(currentPolicy.pdfUrl)}
+              >
+                <FileText size={20} color="#fff" style={{ marginRight: 8 }} />
+                <Text
+                  style={[styles.pdfButtonText, { fontFamily: Fonts.body }]}
+                >
+                  View Full {activeTab} PDF
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.noPdfText}>
+                {isAdmin
+                  ? "No PDF uploaded yet. Use the + icon above to upload."
+                  : "PDF currently unavailable."}
               </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -95,8 +248,13 @@ export default function PoliciesSection() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#F3F4F6",
-    paddingVertical: 64,
+    paddingVertical: 40,
     paddingHorizontal: 16,
+  },
+  center: {
+    justifyContent: "center",
+    alignItems: "center",
+    height: 300,
   },
   content: {
     maxWidth: 896,
@@ -104,10 +262,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   title: {
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: "bold",
     color: "#010e5a",
-    marginBottom: 16,
+    marginBottom: 10,
     textAlign: "center",
   },
   subtitle: {
@@ -122,11 +280,11 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "center",
     gap: 8,
-    marginBottom: 32,
+    marginBottom: 24,
   },
   tab: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: "#E5E7EB",
     borderWidth: 1,
@@ -152,12 +310,29 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
+    elevation: 3,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  adminControls: {
+    flexDirection: "row",
+    gap: 16,
+    backgroundColor: "#F3F4F6", // Slight background to make icons pop
+    padding: 6,
+    borderRadius: 8,
+  },
+  iconBtn: {
+    padding: 4,
   },
   cardTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#010e5a",
-    marginBottom: 16,
+    flex: 1,
   },
   cardText: {
     fontSize: 16,
@@ -167,14 +342,21 @@ const styles = StyleSheet.create({
   },
   pdfButton: {
     backgroundColor: "#FB923C",
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
     alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
   },
   pdfButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  noPdfText: {
+    color: "#9CA3AF",
+    fontStyle: "italic",
+    fontSize: 14,
   },
 });

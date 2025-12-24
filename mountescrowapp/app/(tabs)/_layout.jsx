@@ -57,7 +57,7 @@ function TopNavigation() {
           {/* Contact Button */}
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => router.push("/(tabs)/about/contact")}
+            onPress={() => router.push("/(tabs)/(contact)")}
             activeOpacity={0.7}
           >
             <Headset size={24} color={colors.primary} />
@@ -140,6 +140,17 @@ export default function TabLayout() {
             title: "Notifications",
             tabBarIcon: ({ size, color }) => (
               <BellRing size={size} color={color} />
+            ),
+          }}
+        />
+
+        {/* Contact Tab */}
+        <Tabs.Screen
+          name="contact"
+          options={{
+            title: "Contact",
+            tabBarIcon: ({ size, color }) => (
+              <Headset size={size} color={color} />
             ),
           }}
         />

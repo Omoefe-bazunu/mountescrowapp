@@ -285,9 +285,13 @@ export default function SignUpScreen() {
                   </TouchableOpacity>
                   <Text style={styles.termsText}>
                     I accept the{" "}
-                    <Text style={styles.linkTextInline}>
-                      Terms and Conditions
-                    </Text>
+                    <TouchableOpacity
+                      onPress={() => router.push("/(tabs)/about")}
+                    >
+                      <Text style={styles.linkTextInline}>
+                        Terms and Conditions
+                      </Text>
+                    </TouchableOpacity>
                   </Text>
                 </View>
               )}
@@ -423,6 +427,7 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: 13,
+    flex: 1,
     color: "#666",
   },
   linkTextInline: {

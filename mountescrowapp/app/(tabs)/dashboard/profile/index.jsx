@@ -16,8 +16,10 @@ import apiClient from "../../../../src/api/apiClient";
 import ChangePasswordModal from "./_components/ChangePasswordModal";
 import { format } from "date-fns";
 
+// Define Admin Emails
+const ADMIN_EMAILS = ["raniem57@gmail.com", "mountescrow@gmail.com"];
+
 export default function ProfileScreen() {
-  // Pull 'logout' directly from your AuthContext
   const { user, refresh, logout } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,6 @@ export default function ProfileScreen() {
     }
   };
 
-  // LOGOUT HANDLER USING CONTEXT
   const handleLogoutPress = () => {
     Alert.alert("Logout", "Are you sure you want to log out?", [
       { text: "Cancel", style: "cancel" },
@@ -89,10 +90,7 @@ export default function ProfileScreen() {
         text: "Logout",
         style: "destructive",
         onPress: async () => {
-          // This clears SecureStore AND sets user state to null globally
           await logout();
-          // Navigation will happen automatically via your root layout guards,
-          // but we add this for safety.
           router.replace("/login");
         },
       },
@@ -103,6 +101,9 @@ export default function ProfileScreen() {
     return (
       <ActivityIndicator style={{ flex: 1 }} size="large" color="#f97316" />
     );
+
+  // Check if current user is admin
+  const isAdmin = userData?.email && ADMIN_EMAILS.includes(userData.email);
 
   return (
     <ScrollView
@@ -189,6 +190,17 @@ export default function ProfileScreen() {
           <Text style={styles.securityText}>Change Password</Text>
         </TouchableOpacity>
 
+        {/* ADMIN DASHBOARD BUTTON (Only for Admins) */}
+        {isAdmin && (
+          <TouchableOpacity
+            style={styles.adminBtn}
+            onPress={() => router.push("/(tabs)/dashboard/profile/admin")} // Adjust route as needed
+          >
+            <Ionicons name="shield-checkmark-outline" size={20} color="#fff" />
+            <Text style={styles.adminText}>Admin Dashboard</Text>
+          </TouchableOpacity>
+        )}
+
         {/* LOGOUT BUTTON */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogoutPress}>
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
@@ -204,7 +216,6 @@ export default function ProfileScreen() {
   );
 }
 
-// ... keeping InfoRow and StatusRow as they were ...
 const InfoRow = ({ icon, label, value }) => (
   <View style={styles.row}>
     <Ionicons name={icon} size={20} color="#999" />
@@ -285,6 +296,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   securityText: { marginLeft: 10, fontWeight: "600", color: "#003366" },
+
+  // NEW ADMIN BUTTON STYLES
+  adminBtn: {
+    padding: 15,
+    backgroundColor: "#003366", // Primary Blue to distinguish
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    justifyContent: "center",
+  },
+  adminText: { marginLeft: 10, fontWeight: "bold", color: "#fff" },
+
   logoutBtn: {
     padding: 15,
     backgroundColor: "#fff",

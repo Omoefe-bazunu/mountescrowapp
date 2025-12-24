@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react"; // Added useCallback
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl, // Added RefreshControl
+  RefreshControl,
 } from "react-native";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,14 +15,13 @@ import { useAuth } from "../../../contexts/AuthContexts";
 import apiClient from "../../../src/api/apiClient";
 
 export default function DashboardOverview() {
-  // Destructure 'refresh' from useAuth to update the Wallet Balance specifically
   const { user, loading: authLoading, refresh: refreshUser } = useAuth();
   const router = useRouter();
 
   const [stats, setStats] = useState({ activeDeals: 0, pendingProposals: 0 });
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false); // New state for pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (user) fetchDashboardData();
@@ -30,13 +29,10 @@ export default function DashboardOverview() {
   }, [user, authLoading]);
 
   const fetchDashboardData = async (isRefreshing = false) => {
-    // Only show full-screen loader if not currently doing a pull-to-refresh
     if (!isRefreshing) setLoading(true);
-
     try {
       const res = await apiClient.get("/dashboard/data");
       const data = res.data;
-
       setStats({
         activeDeals: data.activeDeals || 0,
         pendingProposals: data.pendingProposals || 0,
@@ -50,10 +46,8 @@ export default function DashboardOverview() {
     }
   };
 
-  // The function triggered by the pull gesture
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Refresh both the dashboard stats and the user profile (for balance)
     await Promise.all([
       fetchDashboardData(true),
       refreshUser ? refreshUser() : Promise.resolve(),
@@ -76,8 +70,11 @@ export default function DashboardOverview() {
     );
   }
 
+  // ✅ UPDATED LOGIC TO MATCH TRANSACTIONS SCREEN
   const renderTransaction = ({ item }) => {
+    // Logic matches TransactionsScreen
     const isCredit =
+      item.type === "credit" || // Added this missing check
       item.type === "DEPOSIT" ||
       item.type === "MILESTONE_PAYMENT" ||
       item.direction === "incoming";
@@ -104,7 +101,7 @@ export default function DashboardOverview() {
             {isCredit ? "+" : "-"}₦{Number(item.amount || 0).toLocaleString()}
           </Text>
           <Ionicons
-            name={isCredit ? "arrow-up-circle" : "arrow-down-circle"}
+            name={isCredit ? "arrow-down-circle" : "arrow-up-circle"} // Matching icons (Down = In/Green, Up = Out/Red)
             size={16}
             color={isCredit ? "#16a34a" : "#dc2626"}
           />
@@ -117,13 +114,12 @@ export default function DashboardOverview() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
-      // Attach the RefreshControl here
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={["#f97316"]} // Android spinner color
-          tintColor="#f97316" // iOS spinner color
+          colors={["#f97316"]}
+          tintColor="#f97316"
         />
       }
     >

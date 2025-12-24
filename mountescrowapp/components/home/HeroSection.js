@@ -10,6 +10,7 @@ import {
   Image,
   Linking,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Fonts } from "../../constants/Fonts";
 
@@ -20,6 +21,7 @@ const getThumbnailUrl = (id) =>
 
 export default function HeroSection() {
   const [visible, setVisible] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), 100);
@@ -69,7 +71,10 @@ export default function HeroSection() {
             <Text style={styles.orange}>Absolute Trust{"\n"}</Text>
             <Text style={styles.white}>Every time</Text>
           </Text>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard")}
+            style={styles.button}
+          >
             <Text style={[styles.buttonText, { fontFamily: Fonts.body }]}>
               Get Started
             </Text>

@@ -1,115 +1,38 @@
-// import apiClient from "../api/apiClient";
-
-// export async function createProposal(data) {
-//   const {
-//     projectTitle,
-//     description,
-//     counterpartyEmail,
-//     creatorRole,
-//     milestones,
-//     totalAmount,
-//     escrowFee,
-//     escrowFeePayer,
-//     files,
-//   } = data;
-
-//   const formData = new FormData();
-//   formData.append("projectTitle", projectTitle);
-//   formData.append("description", description);
-//   formData.append("counterpartyEmail", counterpartyEmail);
-//   formData.append("creatorRole", creatorRole);
-//   formData.append("milestones", JSON.stringify(milestones));
-//   formData.append("totalAmount", totalAmount.toString());
-//   formData.append("escrowFee", escrowFee.toString());
-//   formData.append("escrowFeePayer", escrowFeePayer.toString());
-
-//   if (files && files.length > 0) {
-//     files.forEach((file) => {
-//       formData.append("files", {
-//         uri: file.uri,
-//         name: file.name || "document.pdf",
-//         type: file.type || "application/pdf",
-//       });
-//     });
-//   }
-
-//   // Path corrected to relative "proposals"
-//   const { data: responseData } = await apiClient.post("proposals", formData, {
-//     headers: { "Content-Type": "multipart/form-data" },
-//   });
-
-//   return {
-//     proposalId: responseData.proposalId,
-//     emailData: responseData.emailData,
-//   };
-// }
-
-// export async function getProposals() {
-//   // Path corrected to relative "proposals" [cite: 249]
-//   const response = await apiClient.get("proposals");
-//   return response.data.proposals || [];
-// }
-
-// // Add this to your proposal.service.js if it's missing
-// export const updateProposal = async (proposalId, proposalData, files = []) => {
-//   try {
-//     const formData = new FormData();
-//     formData.append("projectTitle", proposalData.projectTitle);
-//     formData.append("description", proposalData.description);
-//     formData.append("milestones", JSON.stringify(proposalData.milestones));
-//     formData.append("totalAmount", proposalData.totalAmount.toString());
-//     formData.append("escrowFee", proposalData.escrowFee.toString());
-//     formData.append("escrowFeePayer", proposalData.escrowFeePayer.toString());
-
-//     if (proposalData.removedFiles && proposalData.removedFiles.length > 0) {
-//       formData.append(
-//         "removedFiles",
-//         JSON.stringify(proposalData.removedFiles)
-//       );
-//     }
-
-//     files.forEach((file) => {
-//       formData.append("files", {
-//         uri: file.uri,
-//         name: file.name || "update_file",
-//         type: file.type || "application/octet-stream",
-//       });
-//     });
-
-//     // Path corrected to relative "proposals/${proposalId}"
-//     const { data } = await apiClient.patch(
-//       `proposals/${proposalId}`,
-//       formData,
-//       {
-//         headers: { "Content-Type": "multipart/form-data" },
-//       }
-//     );
-//     return data;
-//   } catch (error) {
-//     console.error("Update proposal error:", error);
-//     throw error;
-//   }
-// };
-
-// export async function getProposalById(id) {
-//   // Use relative path to avoid 404 errors as previously discussed
-//   const response = await apiClient.get(`proposals/${id}`);
-
-//   // FIX: Return the proposal object directly, not the wrapper
-//   return response.data.proposal;
-// }
-
-// export async function updateProposalStatus(id, status) {
-//   // Path corrected to relative "proposals/${id}/status" [cite: 252]
-//   const response = await apiClient.patch(`proposals/${id}/status`, { status });
-//   return response.data;
-// }
-
 import apiClient from "../api/apiClient";
 
 /**
- * Creates a new proposal with support for multiple files and milestone descriptions.
+ * Helper to normalize file data for mobile FormData.
+ * Ensures that PDFs and Images have correct MIME types so they open properly.
  */
+const formatFileForUpload = (file, defaultName) => {
+  let type = file.type || file.mimeType || "application/octet-stream";
+  const name = file.name || defaultName;
+
+  // Manual override for common types to ensure backend/mobile compatibility
+  if (name.toLowerCase().endsWith(".pdf")) {
+    type = "application/pdf";
+  } else if (
+    name.toLowerCase().endsWith(".jpg") ||
+    name.toLowerCase().endsWith(".jpeg")
+  ) {
+    type = "image/jpeg";
+  } else if (name.toLowerCase().endsWith(".png")) {
+    type = "image/png";
+  }
+
+  return {
+    uri: file.uri,
+    name: name,
+    type: type,
+  };
+};
+
+/**
+ * Creates a new proposal with support for multiple files and milestone descriptions.
+ * Matches backend: upload.array("files", 3)
+ */
+// proposal.service.js (Mobile)
+
 export async function createProposal(data) {
   const {
     projectTitle,
@@ -128,41 +51,33 @@ export async function createProposal(data) {
   formData.append("description", description);
   formData.append("counterpartyEmail", counterpartyEmail);
   formData.append("creatorRole", creatorRole);
-
-  // Milestones are stringified so the backend can parse the array
-  formData.append("milestones", JSON.stringify(milestones));
-
+  formData.append("milestones", JSON.stringify(milestones)); // [cite: 196]
   formData.append("totalAmount", totalAmount.toString());
   formData.append("escrowFee", escrowFee.toString());
   formData.append("escrowFeePayer", escrowFeePayer.toString());
 
-  // Handle file uploads
   if (files && files.length > 0) {
-    files.forEach((file) => {
+    files.forEach((file, index) => {
+      // FIX: Ensure PDF type is explicitly sent to the server
+      let type = file.mimeType || file.type || "application/octet-stream";
+      if (file.name?.toLowerCase().endsWith(".pdf")) {
+        type = "application/pdf";
+      }
+
       formData.append("files", {
+        // Backend expects "files" for proposals [cite: 189]
         uri: file.uri,
-        name: file.name || `upload_${Date.now()}.pdf`,
-        type: file.type || "application/pdf",
+        name: file.name || `proposal_file_${index}.pdf`,
+        type: type,
       });
     });
   }
 
-  try {
-    const { data: responseData } = await apiClient.post("proposals", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+  const { data: responseData } = await apiClient.post("proposals", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
-    return {
-      proposalId: responseData.proposalId,
-      emailData: responseData.emailData,
-    };
-  } catch (error) {
-    console.error(
-      "Create proposal error:",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
+  return responseData;
 }
 
 /**
@@ -183,22 +98,19 @@ export async function getProposals() {
 
 /**
  * Updates an existing proposal.
+ * Matches backend: upload.array("files", 3) [cite: 226]
  */
 export const updateProposal = async (proposalId, proposalData, files = []) => {
   try {
     const formData = new FormData();
 
-    // Core Fields
     formData.append("projectTitle", proposalData.projectTitle);
     formData.append("description", proposalData.description);
     formData.append("milestones", JSON.stringify(proposalData.milestones));
-
-    // Financial Fields (Must be strings for FormData but represent numbers)
     formData.append("totalAmount", proposalData.totalAmount.toString());
     formData.append("escrowFee", proposalData.escrowFee.toString());
     formData.append("escrowFeePayer", proposalData.escrowFeePayer.toString());
 
-    // Files logic
     if (proposalData.removedFiles && proposalData.removedFiles.length > 0) {
       formData.append(
         "removedFiles",
@@ -207,12 +119,11 @@ export const updateProposal = async (proposalId, proposalData, files = []) => {
     }
 
     if (files && files.length > 0) {
-      files.forEach((file) => {
-        formData.append("files", {
-          uri: file.uri,
-          name: file.name || `update_${Date.now()}`,
-          type: file.type || "application/octet-stream",
-        });
+      files.forEach((file, index) => {
+        formData.append(
+          "files",
+          formatFileForUpload(file, `update_${index}_${Date.now()}`)
+        );
       });
     }
 
@@ -234,25 +145,28 @@ export const updateProposal = async (proposalId, proposalData, files = []) => {
   }
 };
 
+/**
+ * Buyer accepts and funds a proposal.
+ * [cite: 296]
+ */
 export async function acceptAndFundSellerInitiatedProposal(id, userId) {
   try {
-    // We pass the userId if your backend requires it for wallet deduction
     const response = await apiClient.post(`proposals/${id}/accept-and-fund`, {
       userId,
     });
-    return response.data; // Should return { dealId, deductedAmount }
+    return response.data;
   } catch (error) {
     console.error(
       "Accept and Fund error:",
       error.response?.data || error.message
     );
-    // Re-throw the specific error message from the backend (e.g., "Insufficient balance")
     throw new Error(error.response?.data?.error || "Transaction failed");
   }
 }
 
 /**
  * Fetches a single proposal by ID.
+ * [cite: 220]
  */
 export async function getProposalById(id) {
   try {
@@ -268,7 +182,8 @@ export async function getProposalById(id) {
 }
 
 /**
- * Updates the status (e.g., accepted, rejected) of a proposal.
+ * Updates the status of a proposal.
+ * [cite: 252]
  */
 export async function updateProposalStatus(id, status) {
   try {
