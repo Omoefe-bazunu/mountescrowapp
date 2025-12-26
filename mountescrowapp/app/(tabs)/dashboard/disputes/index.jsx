@@ -23,7 +23,6 @@ export default function DisputesScreen() {
   const fetchDisputes = useCallback(async () => {
     setLoading(true);
     try {
-      // FIXED: Endpoint changed to 'disputes/my' to match backend
       const res = await apiClient.get("disputes/my");
       setDisputes(res.data.disputes || []);
     } catch (err) {
@@ -41,7 +40,6 @@ export default function DisputesScreen() {
   const handleMarkResolved = async (disputeId) => {
     setResolvingId(disputeId);
     try {
-      // FIXED: Endpoint matches backend route structure
       await apiClient.post(`/disputes/${disputeId}/resolve`);
       Alert.alert("Success", "Dispute marked as resolved.");
 
@@ -57,7 +55,6 @@ export default function DisputesScreen() {
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
-
     let date;
     if (timestamp._seconds) {
       date = new Date(timestamp._seconds * 1000);
@@ -68,11 +65,11 @@ export default function DisputesScreen() {
     } else {
       date = new Date(timestamp);
     }
-
     return date && !isNaN(date) ? format(date, "PPP") : "N/A";
   };
 
   const renderDispute = ({ item }) => {
+    const isRaisedByMe = item.raisedByEmail === user?.email;
     const milestoneLabel =
       item.milestoneIndex !== undefined && item.milestoneIndex !== null
         ? `Milestone ${Number(item.milestoneIndex) + 1}`
@@ -84,11 +81,22 @@ export default function DisputesScreen() {
       <View style={styles.disputeCard}>
         <View style={styles.cardHeader}>
           <View style={{ flex: 1 }}>
+            <View
+              style={[
+                styles.roleBadge,
+                isRaisedByMe ? styles.roleOwn : styles.roleOther,
+              ]}
+            >
+              <Text style={styles.roleText}>
+                {isRaisedByMe ? "Raised by You" : "Raised Against You"}
+              </Text>
+            </View>
             <Text style={styles.projectTitle}>{item.projectTitle}</Text>
             <Text style={styles.dateLabel}>
               Raised: {formatDate(item.createdAt)}
             </Text>
           </View>
+
           <View
             style={[
               styles.statusBadge,
@@ -144,7 +152,7 @@ export default function DisputesScreen() {
           </View>
         )}
 
-        {!isResolved && (
+        {isRaisedByMe && !isResolved && (
           <TouchableOpacity
             style={styles.resolveBtn}
             onPress={() => handleMarkResolved(item.id)}
@@ -184,7 +192,7 @@ export default function DisputesScreen() {
             <Ionicons name="shield-checkmark-outline" size={64} color="#ccc" />
             <Text style={styles.emptyTitle}>No Disputes Found</Text>
             <Text style={styles.emptySub}>
-              Disputes you raise will appear here.
+              Disputes involving you will appear here.
             </Text>
           </View>
         }
@@ -214,6 +222,16 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 12,
   },
+  roleBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginBottom: 6,
+  },
+  roleOwn: { backgroundColor: "#eef2ff" },
+  roleOther: { backgroundColor: "#fef2f2" },
+  roleText: { fontSize: 10, fontWeight: "700", color: "#003366" },
   projectTitle: {
     fontSize: 18,
     fontWeight: "bold",

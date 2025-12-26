@@ -30,11 +30,27 @@ export function RequestRevisionModal({
 
     setLoading(true);
     try {
+      // 1. Submit the milestone revision/rejection request [cite: 450, 455]
       await apiClient.post(
         `/deals/${dealId}/milestones/${milestoneIndex}/reject`,
         { reason }
       );
-      Alert.alert("Success", "Revision requested. Seller has been notified.");
+
+      // 2. Automatically stop the countdown timer [cite: 489, 491]
+      try {
+        await apiClient.post(
+          `/deals/${dealId}/milestones/${milestoneIndex}/cancel-countdown`
+        );
+      } catch (countdownErr) {
+        // Log locally if countdown stop fails, but don't block the success alert
+        console.warn("Countdown cancellation failed:", countdownErr.message);
+      }
+
+      Alert.alert(
+        "Success",
+        "Revision requested and timer stopped. Seller has been notified."
+      );
+
       onSuccess();
       onClose();
       setReason("");
@@ -51,7 +67,8 @@ export function RequestRevisionModal({
         <View style={styles.content}>
           <Text style={styles.title}>Request Revision</Text>
           <Text style={styles.subtitle}>
-            Explain what changes are needed for this milestone
+            Explain what changes are needed. This will notify the seller and
+            pause the auto-approval timer.
           </Text>
 
           <TextInput

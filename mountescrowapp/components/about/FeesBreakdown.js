@@ -1,10 +1,17 @@
-// components/about/FeesBreakdown.js
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Animated } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Animated,
+  TouchableOpacity,
+} from "react-native";
 import { Fonts } from "../../constants/Fonts";
 
 export default function FeesBreakdown() {
   const [inView, setInView] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [fadeAnim] = useState(() => new Animated.Value(0));
   const [slideAnim] = useState(() => new Animated.Value(60));
 
@@ -99,98 +106,147 @@ export default function FeesBreakdown() {
           disbursement services. It starts at{" "}
           <Text style={styles.bold}>10%</Text> for smaller deals and decreases
           to as low as <Text style={styles.bold}>1%</Text> for ultra-high-value
-          transactions. The fee can be paid entirely by one party or split
-          between the buyer and seller at varying percentages.
+          transactions.
         </Text>
 
-        {/* Pricing Table Card */}
-        <View style={styles.tableCard}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-            <View>
-              {/* Table Header */}
-              <View style={[styles.tableRow, styles.headerRow]}>
-                <View style={[styles.tableCell, styles.colRange]}>
-                  <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Deal Value
-                  </Text>
-                </View>
-                <View style={[styles.tableCell, styles.colFee]}>
-                  <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Buyer
-                  </Text>
-                </View>
-                <View style={[styles.tableCell, styles.colFee]}>
-                  <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Seller
-                  </Text>
-                </View>
-                <View style={[styles.tableCell, styles.colFee]}>
-                  <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Total
-                  </Text>
-                </View>
-                <View style={[styles.tableCell, styles.colRationale]}>
-                  <Text style={[styles.headerText, { fontFamily: Fonts.body }]}>
-                    Strategic Rationale
-                  </Text>
-                </View>
-              </View>
+        {/* Toggle Button */}
+        <TouchableOpacity
+          onPress={() => setIsOpen(!isOpen)}
+          style={styles.toggleButton}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.toggleButtonText}>
+            {isOpen ? "Hide Pricing Structure" : "View Pricing Structure"}
+          </Text>
+          <Text style={styles.toggleIcon}>{isOpen ? "▲" : "▼"}</Text>
+        </TouchableOpacity>
 
-              {/* Table Body */}
-              {pricingStructure.map((tier, index) => (
-                <View key={index} style={styles.tableRow}>
-                  <View style={[styles.tableCell, styles.colRange]}>
-                    <Text
-                      style={[
-                        styles.cellText,
-                        styles.blueText,
-                        { fontFamily: Fonts.body },
-                      ]}
-                    >
-                      {tier.range}
-                    </Text>
-                  </View>
-                  <View style={[styles.tableCell, styles.colFee]}>
-                    <Text style={[styles.cellText, { fontFamily: Fonts.body }]}>
-                      {tier.buyerFee}
-                    </Text>
-                  </View>
-                  <View style={[styles.tableCell, styles.colFee]}>
-                    <Text style={[styles.cellText, { fontFamily: Fonts.body }]}>
-                      {tier.sellerFee}
-                    </Text>
-                  </View>
-                  <View style={[styles.tableCell, styles.colFee]}>
-                    <Text
-                      style={[
-                        styles.cellText,
-                        styles.bold,
-                        { fontFamily: Fonts.body },
-                      ]}
-                    >
-                      {tier.totalFee}
-                    </Text>
-                  </View>
-                  <View style={[styles.tableCell, styles.colRationale]}>
-                    <Text
-                      style={[
-                        styles.cellText,
-                        styles.grayText,
-                        { fontFamily: Fonts.body },
-                      ]}
-                    >
-                      {tier.rationale}
-                    </Text>
-                  </View>
-                </View>
-              ))}
+        {isOpen && (
+          <View style={styles.tableWrapper}>
+            {/* Visual Scroll Indicator */}
+            <View style={styles.scrollIndicator}>
+              <Text style={styles.scrollIndicatorText}>
+                ↔ Swipe to view full table
+              </Text>
             </View>
-          </ScrollView>
-        </View>
 
-        {/* Info Sections */}
+            <View style={styles.tableCard}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={true}
+                contentContainerStyle={styles.scrollContent}
+              >
+                <View style={styles.tableInner}>
+                  {/* Table Header */}
+                  <View style={[styles.tableRow, styles.headerRow]}>
+                    <View style={[styles.tableCell, styles.colRange]}>
+                      <Text
+                        style={[styles.headerText, { fontFamily: Fonts.body }]}
+                      >
+                        Deal Value
+                      </Text>
+                    </View>
+                    <View style={[styles.tableCell, styles.colFee]}>
+                      <Text
+                        style={[styles.headerText, { fontFamily: Fonts.body }]}
+                      >
+                        Buyer
+                      </Text>
+                    </View>
+                    <View style={[styles.tableCell, styles.colFee]}>
+                      <Text
+                        style={[styles.headerText, { fontFamily: Fonts.body }]}
+                      >
+                        Seller
+                      </Text>
+                    </View>
+                    <View style={[styles.tableCell, styles.colFee]}>
+                      <Text
+                        style={[styles.headerText, { fontFamily: Fonts.body }]}
+                      >
+                        Total
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.tableCell,
+                        styles.colRationale,
+                        styles.lastCell,
+                      ]}
+                    >
+                      <Text
+                        style={[styles.headerText, { fontFamily: Fonts.body }]}
+                      >
+                        Strategic Rationale
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Table Body */}
+                  {pricingStructure.map((tier, index) => (
+                    <View key={index} style={styles.tableRow}>
+                      <View style={[styles.tableCell, styles.colRange]}>
+                        <Text
+                          style={[
+                            styles.cellText,
+                            styles.blueText,
+                            { fontFamily: Fonts.body },
+                          ]}
+                        >
+                          {tier.range}
+                        </Text>
+                      </View>
+                      <View style={[styles.tableCell, styles.colFee]}>
+                        <Text
+                          style={[styles.cellText, { fontFamily: Fonts.body }]}
+                        >
+                          {tier.buyerFee}
+                        </Text>
+                      </View>
+                      <View style={[styles.tableCell, styles.colFee]}>
+                        <Text
+                          style={[styles.cellText, { fontFamily: Fonts.body }]}
+                        >
+                          {tier.sellerFee}
+                        </Text>
+                      </View>
+                      <View style={[styles.tableCell, styles.colFee]}>
+                        <Text
+                          style={[
+                            styles.cellText,
+                            styles.bold,
+                            { fontFamily: Fonts.body },
+                          ]}
+                        >
+                          {tier.totalFee}
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.tableCell,
+                          styles.colRationale,
+                          styles.lastCell,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.cellText,
+                            styles.grayText,
+                            { fontFamily: Fonts.body },
+                          ]}
+                        >
+                          {tier.rationale}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        )}
+
         <View style={styles.infoContainer}>
-          {/* Payment Options */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Payment options for buyers</Text>
             {paymentOptions.map((item, index) => (
@@ -203,7 +259,6 @@ export default function FeesBreakdown() {
             ))}
           </View>
 
-          {/* Disbursement Options */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Disbursement for sellers</Text>
             <Text style={[styles.paragraph, { fontFamily: Fonts.body }]}>
@@ -233,7 +288,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 16,
-    fontFamily: Fonts.heading, // Assuming you have a heading font
+    fontFamily: Fonts.heading,
   },
   paragraph: {
     fontSize: 16,
@@ -244,48 +299,93 @@ const styles = StyleSheet.create({
   bold: {
     fontWeight: "bold",
   },
-  // Table Styles
+  toggleButton: {
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    maxWidth: 260,
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  toggleButtonText: {
+    color: "#010e5a",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  toggleIcon: {
+    color: "#010e5a",
+    fontSize: 12,
+  },
+  tableWrapper: {
+    marginBottom: 40,
+  },
+  scrollIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    marginBottom: 12,
+  },
+  scrollIndicatorText: {
+    color: "#fff",
+    fontSize: 12,
+    fontStyle: "italic",
+  },
   tableCard: {
     backgroundColor: "#fff",
     borderRadius: 12,
     overflow: "hidden",
-    marginBottom: 40,
-    elevation: 4, // Android shadow
-    shadowColor: "#000", // iOS shadow
+    elevation: 4,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  tableInner: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    overflow: "hidden",
+  },
   headerRow: {
     backgroundColor: "#F8FAFC",
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     borderBottomColor: "#E2E8F0",
   },
   tableRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#F1F5F9",
-    alignItems: "stretch", // Ensures cells stretch to fill row height
+    borderBottomColor: "#E2E8F0",
   },
   tableCell: {
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
     justifyContent: "center",
+    borderRightWidth: 1,
+    borderRightColor: "#E2E8F0",
   },
-  // Column Widths
-  colRange: {
-    width: 140,
+  lastCell: {
+    borderRightWidth: 0,
   },
-  colFee: {
-    width: 80,
-  },
-  colRationale: {
-    width: 250,
-  },
+  colRange: { width: 140 },
+  colFee: { width: 90 },
+  colRationale: { width: 320 },
   headerText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "bold",
     color: "#010e5a",
+    textTransform: "uppercase",
   },
   cellText: {
     fontSize: 14,
@@ -294,14 +394,13 @@ const styles = StyleSheet.create({
   },
   blueText: {
     color: "#010e5a",
-    fontWeight: "600",
+    fontWeight: "700",
   },
   grayText: {
     color: "#64748B",
   },
-  // Info Sections
   infoContainer: {
-    gap: 16, // Works in newer React Native versions, fallback to marginTop in section if needed
+    gap: 24,
   },
   sectionTitle: {
     fontSize: 22,
@@ -313,7 +412,7 @@ const styles = StyleSheet.create({
   listItem: {
     flexDirection: "row",
     marginBottom: 12,
-    alignItems: "flex-start", // Aligns bullet with top of text
+    alignItems: "flex-start",
     paddingRight: 8,
   },
   bullet: {
@@ -326,6 +425,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: "rgba(255,255,255,0.9)",
-    flex: 1, // Important: prevents text from overflowing screen width
+    flex: 1,
   },
 });
