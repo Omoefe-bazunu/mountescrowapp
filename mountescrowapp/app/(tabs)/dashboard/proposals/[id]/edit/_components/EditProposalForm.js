@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,16 +8,17 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Linking,
 } from "react-native";
 import { useForm, useFieldArray, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import * as DocumentPicker from "expo-document-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { updateProposal } from "../../../../../../../src/services/proposal.service";
+import apiClient from "../../../../../../../src/api/apiClient";
 
 // Validation Schemas
 const milestoneSchema = z.object({
@@ -51,6 +52,25 @@ export function EditProposalForm({ proposal, proposalId }) {
   const [newFiles, setNewFiles] = useState([]);
   const [removedFiles, setRemovedFiles] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(null);
+
+  // --- FRAUD CONTROL STATES ---
+  const [isSpecialClient, setIsSpecialClient] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const PROJECT_VALUE_LIMIT = 100000000;
+
+  useEffect(() => {
+    const checkClientStatus = async () => {
+      try {
+        const res = await apiClient.get("special-client");
+        setIsSpecialClient(res.data.isSpecialClient || false);
+      } catch (err) {
+        console.error("Failed to fetch client status");
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+    checkClientStatus();
+  }, []);
 
   const { control, handleSubmit, setValue } = useForm({
     resolver: zodResolver(formSchema),
@@ -95,7 +115,13 @@ export function EditProposalForm({ proposal, proposalId }) {
     };
   }, [watchedMilestones, watchedFeePayer]);
 
+  // Fraud Limit Check Logic
+  const limitExceeded = useMemo(() => {
+    return totals.totalAmount > PROJECT_VALUE_LIMIT && !isSpecialClient;
+  }, [totals.totalAmount, isSpecialClient]);
+
   const onSubmit = async (values) => {
+    if (limitExceeded) return;
     setLoading(true);
     try {
       const cleanMilestones = values.milestones.map((m) => ({
@@ -107,13 +133,12 @@ export function EditProposalForm({ proposal, proposalId }) {
             : new Date(m.dueDate).toISOString(),
       }));
 
-      // Round values to avoid floating point errors on the backend
       const payload = {
         ...values,
         milestones: cleanMilestones,
         totalAmount: parseFloat(totals.totalAmount.toFixed(2)),
         escrowFee: parseFloat(totals.totalFeeInclVAT.toFixed(2)),
-        escrowFeePayer: Number(values.escrowFeePayer), // Ensure this is a clean number
+        escrowFeePayer: Number(values.escrowFeePayer),
         removedFiles,
       };
 
@@ -128,6 +153,14 @@ export function EditProposalForm({ proposal, proposalId }) {
       setLoading(false);
     }
   };
+
+  if (checkingStatus) {
+    return (
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color="#f97316" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -161,7 +194,6 @@ export function EditProposalForm({ proposal, proposalId }) {
           )}
         />
 
-        {/* Website Replicated: Escrow Fee Split Select List */}
         <Text style={styles.label}>Who pays the escrow fee?</Text>
         <View style={styles.pickerContainer}>
           <Controller
@@ -211,7 +243,6 @@ export function EditProposalForm({ proposal, proposalId }) {
         </TouchableOpacity>
       </View>
 
-      {/* Website Replicated: Numbered Milestones */}
       {fields.map((item, index) => (
         <View key={item.id} style={styles.milestoneCard}>
           <View style={styles.mHeaderRow}>
@@ -227,7 +258,7 @@ export function EditProposalForm({ proposal, proposalId }) {
             render={({ field: { onChange, value } }) => (
               <TextInput
                 style={styles.mInput}
-                placeholder="Milestone Title (e.g. Design Phase)"
+                placeholder="Milestone Title"
                 value={value}
                 onChangeText={onChange}
               />
@@ -291,7 +322,6 @@ export function EditProposalForm({ proposal, proposalId }) {
         </View>
       ))}
 
-      {/* Financial Summary Breakdown */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>Payment Summary</Text>
         <View style={styles.summaryRow}>
@@ -334,15 +364,37 @@ export function EditProposalForm({ proposal, proposalId }) {
         </View>
       </View>
 
+      {/* FRAUD CONTROL WARNING */}
+      {limitExceeded && (
+        <View style={styles.fraudAlert}>
+          <Ionicons name="alert" size={24} color="#dc2626" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.fraudTitle}>Limit Exceeded</Text>
+            <Text style={styles.fraudText}>
+              Project updates exceeding ₦100M require verification. Please
+              contact{" "}
+              <Text
+                style={styles.link}
+                onPress={() => Linking.openURL("mailto:admin@mountescrow.com")}
+              >
+                Admin (admin@mountescrow.com)
+              </Text>
+            </Text>
+          </View>
+        </View>
+      )}
+
       <TouchableOpacity
-        style={styles.submitBtn}
+        style={[styles.submitBtn, limitExceeded && styles.disabledBtn]}
         onPress={handleSubmit(onSubmit)}
-        disabled={loading}
+        disabled={loading || limitExceeded}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.submitText}>Update Proposal</Text>
+          <Text style={styles.submitText}>
+            {limitExceeded ? "Limit Exceeded" : "Update Proposal"}
+          </Text>
         )}
       </TouchableOpacity>
     </ScrollView>
@@ -441,5 +493,24 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 60,
   },
+  disabledBtn: { backgroundColor: "#d1d5db" },
   submitText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  fraudAlert: {
+    flexDirection: "row",
+    gap: 12,
+    backgroundColor: "#fef2f2",
+    borderSize: 1,
+    borderColor: "#fee2e2",
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  fraudTitle: {
+    color: "#991b1b",
+    fontWeight: "bold",
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  fraudText: { color: "#b91c1c", fontSize: 12, lineHeight: 18 },
+  link: { textDecorationLine: "underline", fontWeight: "bold" },
 });

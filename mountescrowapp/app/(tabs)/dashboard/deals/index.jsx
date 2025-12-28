@@ -7,7 +7,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  TextInput, // Added TextInput
+  TextInput,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,15 +18,24 @@ import apiClient from "../../../../src/api/apiClient";
 export default function DealsScreen() {
   const { user, loading: authLoading } = useAuth();
   const [deals, setDeals] = useState([]);
+  const [flaggedIds, setFlaggedIds] = useState([]); // State for suspended IDs
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(""); // State for search
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   const fetchDeals = async () => {
     try {
-      const res = await apiClient.get("/deals");
-      setDeals(res.data.deals || []);
+      // Fetch deals and flagged IDs simultaneously
+      const [dealsRes, flaggedRes] = await Promise.all([
+        apiClient.get("/deals"),
+        apiClient
+          .get("/deals/flagged-ids")
+          .catch(() => ({ data: { flaggedIds: [] } })),
+      ]);
+
+      setDeals(dealsRes.data.deals || []);
+      setFlaggedIds(flaggedRes.data.flaggedIds || []);
     } catch (error) {
       console.error("Error fetching deals:", error);
     } finally {
@@ -34,7 +44,6 @@ export default function DealsScreen() {
     }
   };
 
-  // Filter deals based on search query
   const filteredDeals = useMemo(() => {
     return deals.filter((deal) =>
       deal.projectTitle.toLowerCase().includes(searchQuery.toLowerCase())
@@ -51,7 +60,8 @@ export default function DealsScreen() {
     else if (!authLoading) setLoading(false);
   }, [user, authLoading]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status, isSuspended) => {
+    if (isSuspended) return "#ef4444";
     switch (status) {
       case "In Progress":
         return "#3b82f6";
@@ -64,18 +74,43 @@ export default function DealsScreen() {
     }
   };
 
+  const handlePressDeal = (item, isSuspended) => {
+    if (isSuspended) {
+      Alert.alert(
+        "Deal Suspended",
+        "This transaction is locked for review. Please contact admin@mountescrow.com for more information.",
+        [{ text: "OK" }]
+      );
+    } else {
+      router.push(`/(tabs)/dashboard/deals/${item.id}`);
+    }
+  };
+
   const renderDeal = ({ item }) => {
     const isBuyer =
       item.buyerId === user?.uid || item.buyerEmail === user?.email;
+    const isSuspended = flaggedIds.includes(item.id);
+
     return (
       <TouchableOpacity
-        style={styles.dealCard}
-        onPress={() => router.push(`/(tabs)/dashboard/deals/${item.id}`)}
+        style={[styles.dealCard, isSuspended && styles.suspendedCard]}
+        onPress={() => handlePressDeal(item, isSuspended)}
       >
         <View style={styles.dealHeader}>
-          <Text style={styles.projectTitle}>{item.projectTitle}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <View style={{ flex: 1 }}>
+            <Text
+              style={[styles.projectTitle, isSuspended && styles.suspendedText]}
+            >
+              {item.projectTitle}
+            </Text>
+          </View>
+          {isSuspended ? (
+            <Ionicons name="lock-closed" size={18} color="#ef4444" />
+          ) : (
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          )}
         </View>
+
         <View style={styles.dealFooter}>
           <View style={styles.roleBadge}>
             <Text style={styles.roleText}>{isBuyer ? "Buyer" : "Seller"}</Text>
@@ -84,13 +119,20 @@ export default function DealsScreen() {
             <View
               style={[
                 styles.statusDot,
-                { backgroundColor: getStatusColor(item.status) },
+                { backgroundColor: getStatusColor(item.status, isSuspended) },
               ]}
             />
-            <Text style={styles.statusText}>{item.status}</Text>
+            <Text
+              style={[
+                styles.statusText,
+                isSuspended && { color: "#ef4444", fontWeight: "bold" },
+              ]}
+            >
+              {isSuspended ? "SUSPENDED" : item.status}
+            </Text>
           </View>
           <Text style={styles.amountText}>
-            ₦{(item.totalAmount + item.escrowFee).toLocaleString()}
+            ₦{(item.totalAmount + (item.escrowFee || 0)).toLocaleString()}
           </Text>
         </View>
       </TouchableOpacity>
@@ -104,7 +146,6 @@ export default function DealsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Search Header */}
       <View style={styles.searchSection}>
         <View style={styles.searchBar}>
           <Ionicons
@@ -178,23 +219,25 @@ const styles = StyleSheet.create({
     height: 45,
   },
   searchIcon: { marginRight: 8 },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: "#333",
-  },
+  searchInput: { flex: 1, fontSize: 15, color: "#333" },
   listContent: { padding: 16, paddingBottom: 100 },
   dealCard: {
     backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
+    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2,
   },
+  suspendedCard: {
+    backgroundColor: "#fff5f5",
+    borderColor: "#feb2b2",
+    borderWidth: 1,
+  },
+  suspendedText: { color: "#c53030" },
   dealHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
