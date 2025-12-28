@@ -11,7 +11,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter, useFocusEffect } from "expo-router"; // Added useFocusEffect
+import { useRouter, useFocusEffect } from "expo-router";
 import { useAuth } from "../../../../contexts/AuthContexts";
 import apiClient from "../../../../src/api/apiClient";
 import WithdrawModal from "./_components/WithdrawModal";
@@ -33,7 +33,6 @@ export default function WalletScreen() {
 
   const router = useRouter();
 
-  // Updated loadData: accepts a 'silent' parameter to avoid jarring UI jumps
   const loadData = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
@@ -41,7 +40,6 @@ export default function WalletScreen() {
         apiClient.get("auth/check"),
         apiClient.get("transactions"),
       ]);
-
       const profile = userRes.data.user;
       setUserData(profile);
       setTransactions(txRes.data.transactions || []);
@@ -62,20 +60,16 @@ export default function WalletScreen() {
     }
   };
 
-  // REFRESH ON LOAD: This triggers every time the screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      loadData(true); // Silent refresh when navigating back to screen
+      loadData(true);
     }, [])
   );
 
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([
-        loadData(true), // Load fresh wallet data
-        refresh(), // Refresh global Auth state (updates balance everywhere)
-      ]);
+      await Promise.all([loadData(true), refresh()]);
     } catch (error) {
       console.error("Refresh failed:", error);
     } finally {
@@ -121,7 +115,7 @@ export default function WalletScreen() {
     return (
       <View key={tx.id || idx} style={styles.txRow}>
         <View style={styles.txInfo}>
-          <Text style={styles.txDesc}>
+          <Text style={styles.txDesc} numberOfLines={1}>
             {tx.description || tx.narration || "Transaction"}
           </Text>
           <Text style={styles.txDate}>
@@ -231,11 +225,19 @@ export default function WalletScreen() {
         )}
       </View>
 
-      {/* Transaction History */}
+      {/* Transaction History - LIMITED TO 5 */}
       <View style={styles.txSection}>
-        <Text style={styles.sectionTitle}>Transaction History</Text>
+        <View style={styles.txHeaderRow}>
+          <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/dashboard/transactions")}
+          >
+            <Text style={styles.viewAllText}>View All</Text>
+          </TouchableOpacity>
+        </View>
+
         {transactions.length > 0 ? (
-          transactions.map((tx, idx) => (
+          transactions.slice(0, 5).map((tx, idx) => (
             <React.Fragment key={tx.id || idx}>
               {renderTransaction(tx, idx)}
               <View style={styles.divider} />
@@ -250,6 +252,7 @@ export default function WalletScreen() {
         isOpen={showWithdrawModal}
         onClose={() => setShowWithdrawModal(false)}
         balance={userData?.walletBalance}
+        userEmail={userData?.email}
         onSuccess={() => loadData(true)}
       />
       <FundModal
@@ -266,7 +269,6 @@ export default function WalletScreen() {
   );
 }
 
-// ... styles preserved from previous fix
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f3f4f6" },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
@@ -307,7 +309,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
+  },
+  txHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
+  },
+  viewAllText: {
+    color: "#003366",
+    fontWeight: "700",
+    fontSize: 13,
   },
   accountBox: { backgroundColor: "#fff", padding: 16, borderRadius: 12 },
   accountRow: {
@@ -335,7 +347,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#333",
     marginBottom: 4,
-    flexWrap: "wrap",
   },
   txDate: { fontSize: 12, color: "#999" },
   txAmount: { alignItems: "flex-end", flexShrink: 0 },
@@ -377,4 +388,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   kycBtnText: { color: "#fff", fontWeight: "bold" },
+  emptyText: { textAlign: "center", py: 20, color: "#999" },
 });
