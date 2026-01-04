@@ -13,6 +13,7 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { submitMilestoneWork } from "../../../../../../src/services/deal.service";
+import { AppText } from "../../../../../../components/ui/AppText";
 
 export function SubmitWorkModal({
   isOpen,
@@ -86,7 +87,7 @@ export function SubmitWorkModal({
       <View style={styles.overlay}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Submit Work</Text>
+            <AppText style={styles.title}>Submit Work</AppText>
             <TouchableOpacity onPress={handleClose}>
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
@@ -102,17 +103,17 @@ export function SubmitWorkModal({
           />
 
           <TouchableOpacity style={styles.fileBtn} onPress={pickFiles}>
-            <Ionicons name="attach" size={20} color="#003366" />
-            <Text style={styles.fileBtnText}>
+            <Ionicons name="attach" size={20} color="#010e5a" />
+            <AppText style={styles.fileBtnText}>
               Attach Deliverables ({files.length})
-            </Text>
+            </AppText>
           </TouchableOpacity>
 
           {/* List selected filenames like the web version */}
           {files.map((f, i) => (
             <View key={i} style={styles.fileRow}>
               <Ionicons name="document-outline" size={14} color="#666" />
-              <Text style={styles.fileName}>{f.name}</Text>
+              <AppText style={styles.fileName}>{f.name}</AppText>
             </View>
           ))}
 
@@ -125,7 +126,9 @@ export function SubmitWorkModal({
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.submitText}>Submit & Start Countdown</Text>
+                <AppText style={styles.submitText}>
+                  Submit & Start Countdown
+                </AppText>
               )}
             </TouchableOpacity>
           </View>
@@ -149,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 15,
   },
-  title: { fontSize: 18, fontWeight: "bold", color: "#003366" },
+  title: { fontSize: 18, fontWeight: "bold", color: "#010e5a" },
   textArea: {
     borderWidth: 1,
     borderColor: "#ddd",
@@ -167,7 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
   },
-  fileBtnText: { marginLeft: 8, color: "#003366", fontWeight: "600" },
+  fileBtnText: { marginLeft: 8, color: "#010e5a", fontWeight: "600" },
   fileRow: {
     flexDirection: "row",
     alignItems: "center",

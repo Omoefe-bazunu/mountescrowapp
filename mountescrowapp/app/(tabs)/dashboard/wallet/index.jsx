@@ -17,6 +17,7 @@ import apiClient from "../../../../src/api/apiClient";
 import WithdrawModal from "./_components/WithdrawModal";
 import FundModal from "./_components/FundModal";
 import CreateVirtualAccountModal from "./_components/CreateVirtualAccountModal";
+import { AppText } from "../../../../components/ui/AppText";
 
 export default function WalletScreen() {
   const { user, loading: authLoading, refresh } = useAuth();
@@ -93,16 +94,16 @@ export default function WalletScreen() {
     return (
       <View style={styles.kycContainer}>
         <Ionicons name="shield-alert-outline" size={60} color="#f97316" />
-        <Text style={styles.kycTitle}>KYC Required</Text>
-        <Text style={styles.kycText}>
+        <AppText style={styles.kycTitle}>KYC Required</AppText>
+        <AppText style={styles.kycText}>
           Your KYC is {userData?.kycStatus || "pending"}. Complete verification
           to access wallet features.
-        </Text>
+        </AppText>
         <TouchableOpacity
           style={styles.kycBtn}
           onPress={() => router.push("/dashboard/kyc")}
         >
-          <Text style={styles.kycBtnText}>Complete KYC</Text>
+          <AppText style={styles.kycBtnText}>Complete KYC</AppText>
         </TouchableOpacity>
       </View>
     );
@@ -115,27 +116,29 @@ export default function WalletScreen() {
     return (
       <View key={tx.id || idx} style={styles.txRow}>
         <View style={styles.txInfo}>
-          <Text style={styles.txDesc} numberOfLines={1}>
+          <AppText style={styles.txDesc} numberOfLines={1}>
             {tx.description || tx.narration || "Transaction"}
-          </Text>
-          <Text style={styles.txDate}>
+          </AppText>
+          <AppText style={styles.txDate}>
             {tx.date ? new Date(tx.date).toLocaleDateString() : "N/A"}
-          </Text>
+          </AppText>
         </View>
 
         <View style={styles.txAmount}>
-          <Text
+          <AppText
             style={[styles.amountText, isDebit ? styles.red : styles.green]}
           >
             {isDebit ? "-" : "+"}₦{Math.abs(tx.amount).toLocaleString()}
-          </Text>
+          </AppText>
           <View
             style={[
               styles.statusBadge,
               tx.status === "SUCCESS" ? styles.bgSuccess : styles.bgPending,
             ]}
           >
-            <Text style={styles.statusText}>{tx.status?.toLowerCase()}</Text>
+            <AppText style={styles.statusText}>
+              {tx.status?.toLowerCase()}
+            </AppText>
           </View>
         </View>
       </View>
@@ -158,7 +161,7 @@ export default function WalletScreen() {
       {/* Balance Card */}
       <View style={styles.balanceCard}>
         <View style={styles.cardHeader}>
-          <Text style={styles.cardLabel}>Available Balance</Text>
+          <AppText style={styles.cardLabel}>Available Balance</AppText>
           <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)}>
             <Ionicons
               name={balanceVisible ? "eye-off" : "eye"}
@@ -167,52 +170,56 @@ export default function WalletScreen() {
             />
           </TouchableOpacity>
         </View>
-        <Text style={styles.balanceValue}>
+        <AppText style={styles.balanceValue}>
           {balanceVisible
             ? `₦${Number(userData?.walletBalance || 0).toLocaleString()}`
             : "₦ ••••••"}
-        </Text>
+        </AppText>
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={styles.actionBtn}
             onPress={() => setShowFundModal(true)}
           >
-            <Ionicons name="add-circle" size={20} color="#003366" />
-            <Text style={styles.actionText}>Fund</Text>
+            <Ionicons name="add-circle" size={20} color="#010e5a" />
+            <AppText style={styles.actionText}>Fund</AppText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, styles.withdrawBtn]}
             onPress={() => setShowWithdrawModal(true)}
           >
             <Ionicons name="arrow-up-circle" size={20} color="#fff" />
-            <Text style={[styles.actionText, { color: "#fff" }]}>Withdraw</Text>
+            <AppText style={[styles.actionText, { color: "#fff" }]}>
+              Withdraw
+            </AppText>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Funding Info */}
       <View style={styles.infoSection}>
-        <Text style={styles.sectionTitle}>Funding Account</Text>
+        <AppText style={styles.sectionTitle}>Funding Account</AppText>
         {virtualAccount ? (
           <View style={styles.accountBox}>
             <View style={styles.accountRow}>
-              <Text style={styles.accLabel}>Account Number</Text>
+              <AppText style={styles.accLabel}>Account Number</AppText>
               <View style={styles.accNumRow}>
-                <Text style={styles.accNum}>
+                <AppText style={styles.accNum}>
                   {virtualAccount.virtualAccountNumber}
-                </Text>
+                </AppText>
                 <TouchableOpacity
                   onPress={() =>
                     copyAccount(virtualAccount.virtualAccountNumber)
                   }
                 >
-                  <Ionicons name="copy-outline" size={18} color="#003366" />
+                  <Ionicons name="copy-outline" size={18} color="#010e5a" />
                 </TouchableOpacity>
               </View>
             </View>
             <View style={styles.accountRow}>
-              <Text style={styles.accLabel}>Bank Name</Text>
-              <Text style={styles.accNum}>{virtualAccount.bankName} MFB</Text>
+              <AppText style={styles.accLabel}>Bank Name</AppText>
+              <AppText style={styles.accNum}>
+                {virtualAccount.bankName} MFB
+              </AppText>
             </View>
           </View>
         ) : (
@@ -220,7 +227,9 @@ export default function WalletScreen() {
             style={styles.createAccBtn}
             onPress={() => setShowCreateModal(true)}
           >
-            <Text style={styles.createAccText}>Create Virtual Account</Text>
+            <AppText style={styles.createAccText}>
+              Create Virtual Account
+            </AppText>
           </TouchableOpacity>
         )}
       </View>
@@ -228,11 +237,11 @@ export default function WalletScreen() {
       {/* Transaction History - LIMITED TO 5 */}
       <View style={styles.txSection}>
         <View style={styles.txHeaderRow}>
-          <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          <AppText style={styles.sectionTitle}>Recent Transactions</AppText>
           <TouchableOpacity
             onPress={() => router.push("/dashboard/transactions")}
           >
-            <Text style={styles.viewAllText}>View All</Text>
+            <AppText style={styles.viewAllText}>View All</AppText>
           </TouchableOpacity>
         </View>
 
@@ -244,7 +253,7 @@ export default function WalletScreen() {
             </React.Fragment>
           ))
         ) : (
-          <Text style={styles.emptyText}>No transactions found.</Text>
+          <AppText style={styles.emptyText}>No transactions found.</AppText>
         )}
       </View>
 
@@ -273,7 +282,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f3f4f6" },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   balanceCard: {
-    backgroundColor: "#003366",
+    backgroundColor: "#010e5a",
     margin: 16,
     padding: 24,
     borderRadius: 16,
@@ -303,7 +312,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   withdrawBtn: { backgroundColor: "#16a34a" },
-  actionText: { fontWeight: "bold", color: "#003366" },
+  actionText: { fontWeight: "bold", color: "#010e5a" },
   infoSection: { paddingHorizontal: 16, marginBottom: 20 },
   sectionTitle: {
     fontSize: 18,
@@ -317,7 +326,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   viewAllText: {
-    color: "#003366",
+    color: "#010e5a",
     fontWeight: "700",
     fontSize: 13,
   },
@@ -329,7 +338,7 @@ const styles = StyleSheet.create({
   },
   accLabel: { color: "#666", fontSize: 13 },
   accNumRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  accNum: { fontWeight: "bold", fontSize: 14, color: "#003366" },
+  accNum: { fontWeight: "bold", fontSize: 14, color: "#010e5a" },
   txSection: { paddingHorizontal: 16 },
   txRow: {
     backgroundColor: "#fff",
@@ -365,9 +374,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderStyle: "dashed",
     borderWidth: 1,
-    borderColor: "#003366",
+    borderColor: "#010e5a",
   },
-  createAccText: { color: "#003366", fontWeight: "bold" },
+  createAccText: { color: "#010e5a", fontWeight: "bold" },
   kycContainer: {
     flex: 1,
     justifyContent: "center",

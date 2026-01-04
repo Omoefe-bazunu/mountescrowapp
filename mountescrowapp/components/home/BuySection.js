@@ -9,6 +9,7 @@ import {
   Animated,
 } from "react-native";
 import { Fonts } from "../../constants/Fonts";
+import { AppText } from "../ui/AppText";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -151,14 +152,14 @@ export default function BuySection() {
                 resizeMode="cover"
               />
               <View style={styles.buyCardContent}>
-                <Text style={styles.buyCardTitle}>{card.title}</Text>
+                <AppText style={styles.buyCardTitle}>{card.title}</AppText>
                 {card.items.map((item, i) => (
-                  <Text
+                  <AppText
                     key={i}
                     style={[styles.buyItem, { fontFamily: Fonts.body }]}
                   >
                     • {item}
-                  </Text>
+                  </AppText>
                 ))}
               </View>
             </Animated.View>

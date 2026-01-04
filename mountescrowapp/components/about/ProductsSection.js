@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, Animated } from "react-native";
 import { ShieldCheck } from "lucide-react-native";
 import { Fonts } from "../../constants/Fonts";
+import { AppText } from "../ui/AppText";
 
 const { width } = Dimensions.get("window");
 
@@ -72,15 +73,17 @@ export default function ProductsSection() {
             },
           ]}
         >
-          <Text style={styles.title}>
+          <AppText style={styles.title}>
             MOUNTESCROW. BUILT FOR TRUST.{" "}
-            <Text style={styles.titleHighlight}>SECURE EVERY TRANSACTION.</Text>
-          </Text>
-          <Text style={[styles.paragraph, { fontFamily: Fonts.body }]}>
+            <AppText style={styles.titleHighlight}>
+              SECURE EVERY TRANSACTION.
+            </AppText>
+          </AppText>
+          <AppText style={[styles.paragraph, { fontFamily: Fonts.body }]}>
             We serve as a trusted third party to guarantee that transaction
             terms are upheld. With Mountescrow, you can have complete confidence
             that everyone involved gets what they expect.
-          </Text>
+          </AppText>
         </Animated.View>
 
         {/* Animated Icon */}

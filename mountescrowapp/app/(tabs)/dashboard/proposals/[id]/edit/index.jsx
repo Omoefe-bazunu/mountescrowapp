@@ -11,6 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { getProposalById } from "../../../../../../src/services/proposal.service";
 import { useAuth } from "../../../../../../contexts/AuthContexts";
 import { EditProposalForm } from "./_components/EditProposalForm";
+import { AppText } from "../../../../../../components/ui/AppText";
 
 export default function EditProposalScreen() {
   const { id } = useLocalSearchParams();
@@ -59,7 +60,7 @@ export default function EditProposalScreen() {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.errorText}>{error}</Text>
+        <AppText style={styles.errorText}>{error}</AppText>
       </View>
     );
   }
@@ -67,10 +68,10 @@ export default function EditProposalScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Edit Proposal</Text>
-        <Text style={styles.subtitle}>
+        <AppText style={styles.title}>Edit Proposal</AppText>
+        <AppText style={styles.subtitle}>
           Update your project details and milestones.
-        </Text>
+        </AppText>
       </View>
       <EditProposalForm proposal={proposal} proposalId={id} />
     </ScrollView>
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: { padding: 16, borderBottomWidth: 1, borderBottomColor: "#eee" },
-  title: { fontSize: 24, fontWeight: "bold", color: "#003366" },
+  title: { fontSize: 24, fontWeight: "bold", color: "#010e5a" },
   subtitle: { fontSize: 14, color: "#666", marginTop: 4 },
   errorText: { color: "#ef4444", textAlign: "center", fontWeight: "600" },
 });

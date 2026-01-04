@@ -10,6 +10,7 @@ import {
   Animated,
 } from "react-native";
 import { Fonts } from "../../constants/Fonts";
+import { AppText } from "../ui/AppText";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -109,10 +110,12 @@ export default function UseCasesSection() {
                 resizeMode="cover"
               />
             </View>
-            <Text style={styles.useCasesCardTitle}>{item.title}</Text>
-            <Text style={[styles.useCasesCardText, { fontFamily: Fonts.body }]}>
+            <AppText style={styles.useCasesCardTitle}>{item.title}</AppText>
+            <AppText
+              style={[styles.useCasesCardText, { fontFamily: Fonts.body }]}
+            >
               {item.text}
-            </Text>
+            </AppText>
             <TouchableOpacity
               style={[
                 styles.useCasesButton,
@@ -121,11 +124,11 @@ export default function UseCasesSection() {
               onPress={item.onPress}
               disabled={item.disabled}
             >
-              <Text
+              <AppText
                 style={[styles.useCasesButtonText, { fontFamily: Fonts.body }]}
               >
                 {item.buttonText}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           </Animated.View>
         ))}
@@ -187,7 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   useCasesButton: {
-    backgroundColor: "#FB923C",
+    backgroundColor: "#f97316",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,

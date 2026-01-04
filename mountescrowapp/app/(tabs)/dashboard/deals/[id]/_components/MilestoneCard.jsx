@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import apiClient from "../../../../../../src/api/apiClient";
 import { SubmitWorkModal } from "./SubmitWorkModal";
 import { RequestRevisionModal } from "./RequestRevisionModal";
+import { AppText } from "../../../../../../components/ui/AppText";
 
 export function MilestoneCard({
   milestone,
@@ -51,20 +52,24 @@ export function MilestoneCard({
     <View style={styles.card}>
       {/* Milestone Details */}
       <View style={styles.header}>
-        <Text style={styles.title}>
+        <AppText style={styles.title}>
           M{milestoneIndex + 1}: {milestone.title}
-        </Text>
-        <Text style={styles.amount}>₦{milestone.amount.toLocaleString()}</Text>
+        </AppText>
+        <AppText style={styles.amount}>
+          ₦{milestone.amount.toLocaleString()}
+        </AppText>
       </View>
-      <Text style={styles.desc}>{milestone.description}</Text>
+      <AppText style={styles.desc}>{milestone.description}</AppText>
 
       {/* Seller's Submission  */}
       {milestone.submission?.message && (
         <View style={styles.submissionBox}>
-          <Text style={styles.submissionLabel}>Seller&apos;s Submission:</Text>
-          <Text style={styles.submissionText}>
+          <AppText style={styles.submissionLabel}>
+            Seller&apos;s Submission:
+          </AppText>
+          <AppText style={styles.submissionText}>
             {milestone.submission.message}
-          </Text>
+          </AppText>
 
           {milestone.submission.files?.length > 0 && (
             <View style={styles.fileContainer}>
@@ -73,7 +78,7 @@ export function MilestoneCard({
                   key={index}
                   onPress={() => Linking.openURL(file.url)} // ALWAYS use file.url from the backend response [cite: 188]
                 >
-                  <Text>{file.name}</Text>
+                  <AppText>{file.name}</AppText>
                 </TouchableOpacity>
               ))}
             </View>
@@ -84,10 +89,10 @@ export function MilestoneCard({
       {/* Revision Request View [cite: 192-193] */}
       {milestone.revisionRequest?.message && (
         <View style={styles.revisionBox}>
-          <Text style={styles.revisionLabel}>Revision Requested:</Text>
-          <Text style={styles.revisionText}>
+          <AppText style={styles.revisionLabel}>Revision Requested:</AppText>
+          <AppText style={styles.revisionText}>
             {milestone.revisionRequest.message}
-          </Text>
+          </AppText>
         </View>
       )}
 
@@ -97,11 +102,11 @@ export function MilestoneCard({
             style={styles.button}
             onPress={() => setSubmitModalOpen(true)}
           >
-            <Text style={styles.buttonText}>
+            <AppText style={styles.buttonText}>
               {milestone.status === "Revision Requested"
                 ? "Resubmit Work"
                 : "Submit Work"}
-            </Text>
+            </AppText>
           </TouchableOpacity>
         )}
 
@@ -112,7 +117,7 @@ export function MilestoneCard({
               style={[styles.actionBtn, styles.rejectBtn]}
               onPress={() => setRevisionModalOpen(true)}
             >
-              <Text style={styles.rejectText}>Request Revision</Text>
+              <AppText style={styles.rejectText}>Request Revision</AppText>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionBtn, styles.approveBtn]}
@@ -122,7 +127,7 @@ export function MilestoneCard({
               {isProcessing ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.btnText}>Approve</Text>
+                <AppText style={styles.btnText}>Approve</AppText>
               )}
             </TouchableOpacity>
           </View>
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  fileName: { fontSize: 12, color: "#003366", fontWeight: "600" },
+  fileName: { fontSize: 12, color: "#010e5a", fontWeight: "600" },
   subLabel: {
     fontWeight: "bold",
     color: "#334155",
@@ -205,7 +210,7 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 4,
   },
-  fileText: { color: "#003366", fontSize: 12, textDecorationLine: "underline" },
+  fileText: { color: "#010e5a", fontSize: 12, textDecorationLine: "underline" },
   revisionBox: {
     backgroundColor: "#fff1f2",
     padding: 12,
@@ -236,7 +241,7 @@ const styles = StyleSheet.create({
     borderColor: "#dc2626",
   },
   button: {
-    backgroundColor: "#003366",
+    backgroundColor: "#010e5a",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",

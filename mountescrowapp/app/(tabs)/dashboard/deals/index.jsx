@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../../contexts/AuthContexts";
 import apiClient from "../../../../src/api/apiClient";
+import { AppText } from "../../../../components/ui/AppText";
 
 export default function DealsScreen() {
   const { user, loading: authLoading } = useAuth();
@@ -98,11 +99,11 @@ export default function DealsScreen() {
       >
         <View style={styles.dealHeader}>
           <View style={{ flex: 1 }}>
-            <Text
+            <AppText
               style={[styles.projectTitle, isSuspended && styles.suspendedText]}
             >
               {item.projectTitle}
-            </Text>
+            </AppText>
           </View>
           {isSuspended ? (
             <Ionicons name="lock-closed" size={18} color="#ef4444" />
@@ -113,7 +114,9 @@ export default function DealsScreen() {
 
         <View style={styles.dealFooter}>
           <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>{isBuyer ? "Buyer" : "Seller"}</Text>
+            <AppText style={styles.roleText}>
+              {isBuyer ? "Buyer" : "Seller"}
+            </AppText>
           </View>
           <View style={styles.statusContainer}>
             <View
@@ -122,18 +125,18 @@ export default function DealsScreen() {
                 { backgroundColor: getStatusColor(item.status, isSuspended) },
               ]}
             />
-            <Text
+            <AppText
               style={[
                 styles.statusText,
                 isSuspended && { color: "#ef4444", fontWeight: "bold" },
               ]}
             >
               {isSuspended ? "SUSPENDED" : item.status}
-            </Text>
+            </AppText>
           </View>
-          <Text style={styles.amountText}>
+          <AppText style={styles.amountText}>
             ₦{(item.totalAmount + (item.escrowFee || 0)).toLocaleString()}
-          </Text>
+          </AppText>
         </View>
       </TouchableOpacity>
     );
@@ -184,14 +187,14 @@ export default function DealsScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={60} color="#ccc" />
-            <Text style={styles.emptyTitle}>
+            <AppText style={styles.emptyTitle}>
               {searchQuery ? "No matching deals" : "No active deals yet"}
-            </Text>
-            <Text style={styles.emptySub}>
+            </AppText>
+            <AppText style={styles.emptySub}>
               {searchQuery
                 ? "Try a different search term"
                 : "Accepted proposals will appear here."}
-            </Text>
+            </AppText>
           </View>
         }
         contentContainerStyle={styles.listContent}
@@ -243,7 +246,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  projectTitle: { fontSize: 16, fontWeight: "bold", color: "#003366" },
+  projectTitle: { fontSize: 16, fontWeight: "bold", color: "#010e5a" },
   dealFooter: {
     flexDirection: "row",
     alignItems: "center",

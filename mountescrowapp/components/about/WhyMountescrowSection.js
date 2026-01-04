@@ -9,6 +9,7 @@ import {
   Animated,
 } from "react-native";
 import { Fonts } from "../../constants/Fonts";
+import { AppText } from "../ui/AppText";
 
 const { width } = Dimensions.get("window");
 
@@ -60,17 +61,17 @@ export default function WhyMountescrowSection() {
             },
           ]}
         >
-          <Text style={styles.title}>WHY USE MOUNTESCROW?</Text>
-          <Text style={styles.subtitle}>
+          <AppText style={styles.title}>WHY USE MOUNTESCROW?</AppText>
+          <AppText style={styles.subtitle}>
             WE PRIORITIZE TRUST, SECURITY, EFFICIENCY & RELIABILITY
-          </Text>
-          <Text style={[styles.paragraph, { fontFamily: Fonts.body }]}>
+          </AppText>
+          <AppText style={[styles.paragraph, { fontFamily: Fonts.body }]}>
             We have collaborated with a reliable and trusted deposit money bank
             in Nigeria to provide you with a simple, transparent, and secured
             payment method for your transactions. Making it easy, convenient and
             safe to do business anywhere, even if you do not know or trust
             anyone.
-          </Text>
+          </AppText>
         </Animated.View>
 
         {/* Image Section */}

@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { AppText } from "../../../../../components/ui/AppText";
 
 export default function FundModal({ isOpen, onClose, account }) {
   const copyToClipboard = (text) => {
@@ -22,26 +23,26 @@ export default function FundModal({ isOpen, onClose, account }) {
       <View style={styles.overlay}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Fund Your Wallet</Text>
+            <AppText style={styles.title}>Fund Your Wallet</AppText>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.description}>
+          <AppText style={styles.description}>
             {account?.virtualAccountNumber
               ? "Transfer money to this account to fund your wallet. Funds will be automatically credited."
               : "You need to create a virtual account to fund your wallet."}
-          </Text>
+          </AppText>
 
           {account?.virtualAccountNumber && (
             <View style={styles.infoBox}>
               <View style={styles.row}>
-                <Text style={styles.label}>Account Number</Text>
+                <AppText style={styles.label}>Account Number</AppText>
                 <View style={styles.copyRow}>
-                  <Text style={styles.value}>
+                  <AppText style={styles.value}>
                     {account.virtualAccountNumber}
-                  </Text>
+                  </AppText>
                   <TouchableOpacity
                     onPress={() =>
                       copyToClipboard(account.virtualAccountNumber)
@@ -53,21 +54,21 @@ export default function FundModal({ isOpen, onClose, account }) {
               </View>
 
               <View style={styles.row}>
-                <Text style={styles.label}>Bank Name</Text>
-                <Text style={styles.value}>{account.bankName} MFB</Text>
+                <AppText style={styles.label}>Bank Name</AppText>
+                <AppText style={styles.value}>{account.bankName} MFB</AppText>
               </View>
 
               <View style={styles.noteBox}>
-                <Text style={styles.noteText}>
+                <AppText style={styles.noteText}>
                   💡 Note: Transfers may take a few minutes to reflect in your
                   balance.
-                </Text>
+                </AppText>
               </View>
             </View>
           )}
 
           <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-            <Text style={styles.closeBtnText}>Close</Text>
+            <AppText style={styles.closeBtnText}>Close</AppText>
           </TouchableOpacity>
         </View>
       </View>

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Fonts } from "../../constants/Fonts";
 import FeesBreakdown from "./FeesBreakdown";
+import { AppText } from "../ui/AppText";
 
 const { width } = Dimensions.get("window");
 
@@ -70,16 +71,16 @@ export default function FeeCalculatorSection() {
       >
         <View style={styles.content}>
           <View style={styles.card}>
-            <Text style={styles.title}>Calculate Your Escrow Fee</Text>
-            <Text style={[styles.subtitle, { fontFamily: Fonts.body }]}>
+            <AppText style={styles.title}>Calculate Your Escrow Fee</AppText>
+            <AppText style={[styles.subtitle, { fontFamily: Fonts.body }]}>
               Calculate the exact amount we are charging for helping you hold
               your funds until your transaction is completed.
-            </Text>
+            </AppText>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { fontFamily: Fonts.body }]}>
+              <AppText style={[styles.label, { fontFamily: Fonts.body }]}>
                 Amount to hold
-              </Text>
+              </AppText>
               <View style={styles.inputRow}>
                 <TextInput
                   style={[styles.input, { fontFamily: Fonts.body }]}
@@ -96,22 +97,28 @@ export default function FeeCalculatorSection() {
               onPress={calculateFees}
               activeOpacity={0.8}
             >
-              <Text style={[styles.buttonText, { fontFamily: Fonts.body }]}>
+              <AppText style={[styles.buttonText, { fontFamily: Fonts.body }]}>
                 Calculate
-              </Text>
+              </AppText>
             </TouchableOpacity>
 
             {calculated && totalFee > 0 && (
               <View style={styles.resultsContainer}>
-                <Text style={[styles.resultText, { fontFamily: Fonts.body }]}>
+                <AppText
+                  style={[styles.resultText, { fontFamily: Fonts.body }]}
+                >
                   Buyer Fee: ₦{buyerFee.toLocaleString()}
-                </Text>
-                <Text style={[styles.resultText, { fontFamily: Fonts.body }]}>
+                </AppText>
+                <AppText
+                  style={[styles.resultText, { fontFamily: Fonts.body }]}
+                >
                   Seller Fee: ₦{sellerFee.toLocaleString()}
-                </Text>
-                <Text style={[styles.resultText, { fontFamily: Fonts.body }]}>
+                </AppText>
+                <AppText
+                  style={[styles.resultText, { fontFamily: Fonts.body }]}
+                >
                   Total Fee: ₦{totalFee.toLocaleString()} ({totalFeePercent}%)
-                </Text>
+                </AppText>
               </View>
             )}
           </View>

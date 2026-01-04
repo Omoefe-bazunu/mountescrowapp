@@ -17,7 +17,7 @@ import {
   markNotificationAsRead,
   deleteNotification,
   markAllNotificationsAsRead,
-} from "../../src/services/notification.service";
+} from "../../../../src/services/notification.service";
 
 export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState([]);
@@ -73,16 +73,16 @@ export default function NotificationsScreen() {
     switch (category) {
       case "proposals":
         // Maps 'proposals/123' -> '/dashboard/proposals/123'
-        router.push(`/dashboard/proposals/${id}`);
+        router.push(`/(tabs)/dashboard/proposals/${id}`);
         break;
       case "deals":
-        router.push(`/dashboard/deals/${id}`);
+        router.push(`/(tabs)/dashboard/deals/${id}`);
         break;
       case "disputes":
-        router.push(`/dashboard/disputes`);
+        router.push(`/(tabs)/dashboard/disputes`);
         break;
       case "wallet":
-        router.push("/dashboard/wallet");
+        router.push("/(tabs)/dashboard/wallet");
         break;
       default:
         // Fallback for unknown routes
@@ -176,6 +176,16 @@ export default function NotificationsScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header with Back Arrow */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/dashboard")}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#003366" />
+        </TouchableOpacity>
+      </View>
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notifications</Text>
@@ -251,6 +261,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "flex-start",
   },
   headerTitle: {
     fontSize: 20,

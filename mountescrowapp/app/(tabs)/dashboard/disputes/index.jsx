@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useAuth } from "../../../../contexts/AuthContexts";
 import apiClient from "../../../../src/api/apiClient";
+import { AppText } from "../../../../components/ui/AppText";
 
 export default function DisputesScreen() {
   const { user, loading: authLoading } = useAuth();
@@ -87,14 +88,14 @@ export default function DisputesScreen() {
                 isRaisedByMe ? styles.roleOwn : styles.roleOther,
               ]}
             >
-              <Text style={styles.roleText}>
+              <AppText style={styles.roleText}>
                 {isRaisedByMe ? "Raised by You" : "Raised Against You"}
-              </Text>
+              </AppText>
             </View>
-            <Text style={styles.projectTitle}>{item.projectTitle}</Text>
-            <Text style={styles.dateLabel}>
+            <AppText style={styles.projectTitle}>{item.projectTitle}</AppText>
+            <AppText style={styles.dateLabel}>
               Raised: {formatDate(item.createdAt)}
-            </Text>
+            </AppText>
           </View>
 
           <View
@@ -103,36 +104,36 @@ export default function DisputesScreen() {
               isResolved ? styles.bgSuccess : styles.bgPending,
             ]}
           >
-            <Text
+            <AppText
               style={[
                 styles.statusText,
                 isResolved ? styles.textSuccess : styles.textPending,
               ]}
             >
               {item.status?.replace("_", " ")}
-            </Text>
+            </AppText>
           </View>
         </View>
 
         <View style={styles.detailsBox}>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Disputed Target:</Text>
-            <Text style={styles.detailValue}>{milestoneLabel}</Text>
+            <AppText style={styles.detailLabel}>Disputed Target:</AppText>
+            <AppText style={styles.detailValue}>{milestoneLabel}</AppText>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Deal ID:</Text>
-            <Text style={styles.detailValue} numberOfLines={1}>
+            <AppText style={styles.detailLabel}>Deal ID:</AppText>
+            <AppText style={styles.detailValue} numberOfLines={1}>
               {item.dealId}
-            </Text>
+            </AppText>
           </View>
         </View>
 
-        <Text style={styles.reasonLabel}>Reason for Dispute:</Text>
-        <Text style={styles.reasonText}>{item.reason}</Text>
+        <AppText style={styles.reasonLabel}>Reason for Dispute:</AppText>
+        <AppText style={styles.reasonText}>{item.reason}</AppText>
 
         {item.files?.length > 0 && (
           <View style={styles.filesSection}>
-            <Text style={styles.fileHeader}>Attached Proof:</Text>
+            <AppText style={styles.fileHeader}>Attached Proof:</AppText>
             <View style={styles.fileGrid}>
               {item.files.map((url, i) => (
                 <TouchableOpacity
@@ -143,9 +144,9 @@ export default function DisputesScreen() {
                   <Ionicons
                     name="document-attach-outline"
                     size={14}
-                    color="#003366"
+                    color="#010e5a"
                   />
-                  <Text style={styles.fileChipText}>File {i + 1}</Text>
+                  <AppText style={styles.fileChipText}>File {i + 1}</AppText>
                 </TouchableOpacity>
               ))}
             </View>
@@ -163,7 +164,9 @@ export default function DisputesScreen() {
             ) : (
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Ionicons name="checkmark-done-circle" size={18} color="#fff" />
-                <Text style={styles.resolveBtnText}>Mark as Resolved</Text>
+                <AppText style={styles.resolveBtnText}>
+                  Mark as Resolved
+                </AppText>
               </View>
             )}
           </TouchableOpacity>
@@ -175,7 +178,7 @@ export default function DisputesScreen() {
   if (loading || authLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#003366" />
+        <ActivityIndicator size="large" color="#010e5a" />
       </View>
     );
   }
@@ -190,10 +193,10 @@ export default function DisputesScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="shield-checkmark-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyTitle}>No Disputes Found</Text>
-            <Text style={styles.emptySub}>
+            <AppText style={styles.emptyTitle}>No Disputes Found</AppText>
+            <AppText style={styles.emptySub}>
               Disputes involving you will appear here.
-            </Text>
+            </AppText>
           </View>
         }
       />
@@ -231,11 +234,11 @@ const styles = StyleSheet.create({
   },
   roleOwn: { backgroundColor: "#eef2ff" },
   roleOther: { backgroundColor: "#fef2f2" },
-  roleText: { fontSize: 10, fontWeight: "700", color: "#003366" },
+  roleText: { fontSize: 10, fontWeight: "700", color: "#010e5a" },
   projectTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#003366",
+    color: "#010e5a",
     marginBottom: 4,
   },
   dateLabel: { fontSize: 12, color: "#999" },
@@ -293,9 +296,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
   },
-  fileChipText: { fontSize: 12, color: "#003366", fontWeight: "600" },
+  fileChipText: { fontSize: 12, color: "#010e5a", fontWeight: "600" },
   resolveBtn: {
-    backgroundColor: "#003366",
+    backgroundColor: "#010e5a",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",

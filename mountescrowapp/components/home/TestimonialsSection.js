@@ -15,6 +15,7 @@ import {
 } from "react-native";
 // ✅ REVERTED: Back to ImagePicker
 import * as ImagePicker from "expo-image-picker";
+import { AppText } from "../ui/AppText";
 import {
   Star,
   PlusCircle,
@@ -215,11 +216,11 @@ export default function TestimonialsSection() {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-        <Text style={styles.title}>HEAR FROM OUR USERS</Text>
-        <Text style={[styles.subtitle, { fontFamily: Fonts.body }]}>
+        <AppText style={styles.title}>HEAR FROM OUR USERS</AppText>
+        <AppText style={[styles.subtitle, { fontFamily: Fonts.body }]}>
           Hear from those who already use Mountescrow to power safe and secure
           payments.
-        </Text>
+        </AppText>
 
         <TouchableOpacity style={styles.ctaButton} onPress={handleOpenModal}>
           {userTestimonial ? (
@@ -227,16 +228,16 @@ export default function TestimonialsSection() {
           ) : (
             <PlusCircle size={18} color="#fff" />
           )}
-          <Text style={[styles.ctaText, { fontFamily: Fonts.body }]}>
+          <AppText style={[styles.ctaText, { fontFamily: Fonts.body }]}>
             {userTestimonial
               ? "Update Your Testimonial"
               : "Add Your Testimonial"}
-          </Text>
+          </AppText>
         </TouchableOpacity>
 
         {testimonials.length === 0 ? (
           <View style={styles.card}>
-            <Text style={{ color: "#666" }}>No reviews yet.</Text>
+            <AppText style={{ color: "#666" }}>No reviews yet.</AppText>
           </View>
         ) : (
           current && (
@@ -258,28 +259,30 @@ export default function TestimonialsSection() {
                   />
                 ) : (
                   <View style={styles.initialsAvatar}>
-                    <Text style={styles.initialsText}>
+                    <AppText style={styles.initialsText}>
                       {current.authorName?.charAt(0).toUpperCase() || "U"}
-                    </Text>
+                    </AppText>
                   </View>
                 )}
               </View>
 
-              <Text style={[styles.reviewText, { fontFamily: Fonts.body }]}>
+              <AppText style={[styles.reviewText, { fontFamily: Fonts.body }]}>
                 &quot;{current.review}&quot;
-              </Text>
+              </AppText>
 
               <View style={{ alignItems: "center", gap: 6 }}>
                 {renderStars(current.rating)}
                 <View style={{ alignItems: "center" }}>
-                  <Text
+                  <AppText
                     style={[styles.authorName, { fontFamily: Fonts.heading }]}
                   >
                     {current.authorName}
-                  </Text>
-                  <Text style={[styles.authorRole, { fontFamily: Fonts.body }]}>
+                  </AppText>
+                  <AppText
+                    style={[styles.authorRole, { fontFamily: Fonts.body }]}
+                  >
                     {current.authorTitle}
-                  </Text>
+                  </AppText>
                 </View>
               </View>
             </View>
@@ -292,9 +295,9 @@ export default function TestimonialsSection() {
           <View style={styles.modalContent}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
+                <AppText style={styles.modalTitle}>
                   {userTestimonial ? "Update Review" : "Share Experience"}
-                </Text>
+                </AppText>
                 <TouchableOpacity onPress={() => setShowModal(false)}>
                   <X size={24} color="#6B7280" />
                 </TouchableOpacity>
@@ -324,7 +327,7 @@ export default function TestimonialsSection() {
                 onChangeText={(t) => setFormData({ ...formData, review: t })}
               />
 
-              <Text style={styles.label}>Rating (1-5)</Text>
+              <AppText style={styles.label}>Rating (1-5)</AppText>
               <View style={styles.ratingRow}>
                 {[1, 2, 3, 4, 5].map((num) => (
                   <TouchableOpacity
@@ -355,9 +358,9 @@ export default function TestimonialsSection() {
                 ) : (
                   <View style={styles.placeholderPreview}>
                     <ImageIcon size={32} color="#9CA3AF" />
-                    <Text style={styles.placeholderText}>
+                    <AppText style={styles.placeholderText}>
                       No photo selected
-                    </Text>
+                    </AppText>
                   </View>
                 )}
               </View>
@@ -366,13 +369,13 @@ export default function TestimonialsSection() {
                 style={styles.uploadBtn}
                 onPress={handlePickImage}
               >
-                <Text style={styles.uploadBtnText}>
+                <AppText style={styles.uploadBtnText}>
                   {formData.photo
                     ? "Change Photo"
                     : userTestimonial?.photoUrl
                     ? "Update Photo (Optional)"
                     : "Upload Photo (Optional)"}
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -383,9 +386,9 @@ export default function TestimonialsSection() {
                 {isSubmitting ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.submitText}>
+                  <AppText style={styles.submitText}>
                     {userTestimonial ? "Save Changes" : "Submit Review"}
-                  </Text>
+                  </AppText>
                 )}
               </TouchableOpacity>
 
@@ -396,7 +399,7 @@ export default function TestimonialsSection() {
                   disabled={isSubmitting}
                 >
                   <Trash2 size={18} color="#ef4444" />
-                  <Text style={styles.deleteText}>Delete Review</Text>
+                  <AppText style={styles.deleteText}>Delete Review</AppText>
                 </TouchableOpacity>
               )}
             </ScrollView>

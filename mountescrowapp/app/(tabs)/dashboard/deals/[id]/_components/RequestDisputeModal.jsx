@@ -12,6 +12,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import { createDispute } from "../../../../../../src/services/dispute.service";
+import { AppText } from "../../../../../../components/ui/AppText";
 
 export function RequestDisputeModal({
   isOpen,
@@ -61,9 +62,9 @@ export function RequestDisputeModal({
     <Modal visible={isOpen} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.content}>
-          <Text style={styles.title}>Raise a Dispute</Text>
+          <AppText style={styles.title}>Raise a Dispute</AppText>
 
-          <Text style={styles.label}>Select Milestone</Text>
+          <AppText style={styles.label}>Select Milestone</AppText>
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={milestoneIndex}
@@ -80,7 +81,7 @@ export function RequestDisputeModal({
             </Picker>
           </View>
 
-          <Text style={styles.label}>Reason</Text>
+          <AppText style={styles.label}>Reason</AppText>
           <TextInput
             style={styles.textArea}
             multiline
@@ -92,7 +93,7 @@ export function RequestDisputeModal({
 
           <View style={styles.actions}>
             <TouchableOpacity onPress={handleClose} style={styles.cancelBtn}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <AppText style={styles.cancelText}>Cancel</AppText>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.submitBtn}
@@ -102,7 +103,7 @@ export function RequestDisputeModal({
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.submitText}>Submit</Text>
+                <AppText style={styles.submitText}>Submit</AppText>
               )}
             </TouchableOpacity>
           </View>

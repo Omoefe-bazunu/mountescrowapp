@@ -22,7 +22,7 @@ export default function Home() {
         <BuySection />
         <UseCasesSection />
         <TestimonialsSection />
-        <FAQSection />
+        {/* <FAQSection /> */}
       </ScrollView>
     </View>
   );

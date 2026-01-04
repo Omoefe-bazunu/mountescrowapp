@@ -13,6 +13,7 @@ import {
 import { Phone, Mail, MapPin } from "lucide-react-native";
 import { Fonts } from "../../../constants/Fonts";
 import { sendContactMessage } from "../../../src/services/contact.service";
+import { AppText } from "../../../components/ui/AppText";
 
 const contacts = [
   { Icon: Phone, text: "+2348087480502" },
@@ -99,22 +100,24 @@ export default function ContactUsPage() {
             <View style={styles.overlay} />
           </ImageBackground>
           <View style={styles.content}>
-            <Text style={[styles.title, { fontFamily: Fonts.body }]}>
+            <AppText style={[styles.title, { fontFamily: Fonts.body }]}>
               Contact Details
-            </Text>
-            <Text style={[styles.desc, { fontFamily: Fonts.body }]}>
+            </AppText>
+            <AppText style={[styles.desc, { fontFamily: Fonts.body }]}>
               Get in touch with us using the following details or fill the form
               to leave a message. We love to hear from you.
-            </Text>
+            </AppText>
             <View style={styles.icons}>
               {contacts.map(({ Icon, text }, i) => (
                 <View key={i} style={styles.iconItem}>
                   <View style={styles.iconCircle}>
                     <Icon color="white" size={20} />
                   </View>
-                  <Text style={[styles.iconText, { fontFamily: Fonts.body }]}>
+                  <AppText
+                    style={[styles.iconText, { fontFamily: Fonts.body }]}
+                  >
                     {text}
-                  </Text>
+                  </AppText>
                 </View>
               ))}
             </View>
@@ -127,9 +130,9 @@ export default function ContactUsPage() {
             {["Name", "Email", "Phone (Preferably WhatsApp)"].map(
               (label, i) => (
                 <View key={i} style={styles.inputGroup}>
-                  <Text style={[styles.label, { fontFamily: Fonts.body }]}>
+                  <AppText style={[styles.label, { fontFamily: Fonts.body }]}>
                     {label}
-                  </Text>
+                  </AppText>
                   <TextInput
                     placeholder={getPlaceholder(label)}
                     style={[styles.input, { fontFamily: Fonts.body }]}
@@ -145,9 +148,9 @@ export default function ContactUsPage() {
             )}
 
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { fontFamily: Fonts.body }]}>
+              <AppText style={[styles.label, { fontFamily: Fonts.body }]}>
                 Message
-              </Text>
+              </AppText>
               <TextInput
                 placeholder="Write your message here"
                 multiline
@@ -169,9 +172,11 @@ export default function ContactUsPage() {
               {loading ? (
                 <ActivityIndicator color="white" size="small" />
               ) : (
-                <Text style={[styles.buttonText, { fontFamily: Fonts.body }]}>
+                <AppText
+                  style={[styles.buttonText, { fontFamily: Fonts.body }]}
+                >
                   Send Message
-                </Text>
+                </AppText>
               )}
             </TouchableOpacity>
           </View>

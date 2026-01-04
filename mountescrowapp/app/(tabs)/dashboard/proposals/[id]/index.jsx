@@ -20,6 +20,7 @@ import {
   acceptAndFundSellerInitiatedProposal,
 } from "../../../../../src/services/proposal.service";
 import { createDealFromProposal } from "../../../../../src/services/deal.service";
+import { AppText } from "../../../../../components/ui/AppText";
 
 const formatNumber = (num) => {
   return new Intl.NumberFormat("en-NG", {
@@ -125,12 +126,12 @@ export default function ProposalDetailScreen() {
 
   if (loading)
     return (
-      <ActivityIndicator style={styles.centered} size="large" color="#003366" />
+      <ActivityIndicator style={styles.centered} size="large" color="#010e5a" />
     );
   if (!proposal)
     return (
       <View style={styles.centered}>
-        <Text>Proposal not found.</Text>
+        <AppText>Proposal not found.</AppText>
       </View>
     );
 
@@ -145,7 +146,7 @@ export default function ProposalDetailScreen() {
       {/* Header Section */}
       <View style={styles.card}>
         <View style={styles.headerRow}>
-          <Text style={styles.title}>{proposal.projectTitle}</Text>
+          <AppText style={styles.title}>{proposal.projectTitle}</AppText>
           {canEdit && (
             <TouchableOpacity
               onPress={() => router.push(`/dashboard/proposals/${id}/edit`)}
@@ -154,23 +155,24 @@ export default function ProposalDetailScreen() {
             </TouchableOpacity>
           )}
         </View>
-        <Text style={styles.statusBadge}>{proposal.status}</Text>
-        <Text style={styles.desc}>{proposal.description}</Text>
+        <AppText style={styles.statusBadge}>{proposal.status}</AppText>
+        <AppText style={styles.desc}>{proposal.description}</AppText>
 
         <View style={styles.partyRow}>
-          <Text style={styles.partyText}>
-            <Text style={styles.bold}>Buyer:</Text> {proposal.buyerEmail}
-          </Text>
-          <Text style={styles.partyText}>
-            <Text style={styles.bold}>Seller:</Text> {proposal.sellerEmail}
-          </Text>
+          <AppText style={styles.partyText}>
+            <AppText style={styles.bold}>Buyer:</AppText> {proposal.buyerEmail}
+          </AppText>
+          <AppText style={styles.partyText}>
+            <AppText style={styles.bold}>Seller:</AppText>{" "}
+            {proposal.sellerEmail}
+          </AppText>
         </View>
       </View>
 
       {/* Files Section */}
       {proposal.files?.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Project Files</Text>
+          <AppText style={styles.sectionTitle}>Project Files</AppText>
           {proposal.files.map((fileUrl, index) => (
             <TouchableOpacity
               key={index}
@@ -180,11 +182,11 @@ export default function ProposalDetailScreen() {
               <Ionicons
                 name="document-text-outline"
                 size={20}
-                color="#003366"
+                color="#010e5a"
               />
-              <Text style={styles.fileName} numberOfLines={1}>
+              <AppText style={styles.fileName} numberOfLines={1}>
                 {getFileNameFromUrl(fileUrl)}
-              </Text>
+              </AppText>
               <Ionicons name="eye-outline" size={18} color="#666" />
             </TouchableOpacity>
           ))}
@@ -193,19 +195,19 @@ export default function ProposalDetailScreen() {
 
       {/* Milestones Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Milestones</Text>
+        <AppText style={styles.sectionTitle}>Milestones</AppText>
         {proposal.milestones.map((m, i) => (
           <View key={i} style={styles.milestoneCard}>
-            <Text style={styles.milestoneTitle}>{m.title}</Text>
-            <Text style={styles.milestoneDesc}>{m.description}</Text>
+            <AppText style={styles.milestoneTitle}>{m.title}</AppText>
+            <AppText style={styles.milestoneDesc}>{m.description}</AppText>
             <View style={styles.milestoneFooter}>
-              <Text style={styles.milestoneAmount}>
+              <AppText style={styles.milestoneAmount}>
                 ₦{formatNumber(m.amount)}
-              </Text>
-              <Text style={styles.milestoneDate}>
+              </AppText>
+              <AppText style={styles.milestoneDate}>
                 Due:{" "}
                 {m.dueDate ? format(toDate(m.dueDate), "MMM dd, yyyy") : "N/A"}
-              </Text>
+              </AppText>
             </View>
           </View>
         ))}
@@ -213,35 +215,37 @@ export default function ProposalDetailScreen() {
 
       {/* Financial Summary */}
       <View style={styles.summaryCard}>
-        <Text style={styles.sectionTitle}>Financial Summary</Text>
+        <AppText style={styles.sectionTitle}>Financial Summary</AppText>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Total Project Amount</Text>
-          <Text style={styles.summaryValue}>
+          <AppText style={styles.summaryLabel}>Total Project Amount</AppText>
+          <AppText style={styles.summaryValue}>
             ₦{formatNumber(proposal.totalAmount)}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Total Escrow Fee (incl. VAT)</Text>
-          <Text style={styles.summaryValue}>
+          <AppText style={styles.summaryLabel}>
+            Total Escrow Fee (incl. VAT)
+          </AppText>
+          <AppText style={styles.summaryValue}>
             ₦{formatNumber(proposal.escrowFee)}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.divider} />
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>
+          <AppText style={styles.summaryLabel}>
             Buyer Portion ({proposal.escrowFeePayer}%)
-          </Text>
-          <Text style={styles.summaryValue}>
+          </AppText>
+          <AppText style={styles.summaryValue}>
             ₦{formatNumber(buyerEscrowFeePortion)}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>
+          <AppText style={styles.summaryLabel}>
             Seller Portion ({100 - proposal.escrowFeePayer}%)
-          </Text>
-          <Text style={styles.summaryValue}>
+          </AppText>
+          <AppText style={styles.summaryValue}>
             ₦{formatNumber(sellerEscrowFeePortion)}
-          </Text>
+          </AppText>
         </View>
       </View>
 
@@ -253,7 +257,7 @@ export default function ProposalDetailScreen() {
               style={styles.declineBtn}
               onPress={() => Alert.alert("Decline", "Feature coming soon")}
             >
-              <Text style={styles.declineText}>Decline</Text>
+              <AppText style={styles.declineText}>Decline</AppText>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.acceptBtn}
@@ -263,7 +267,9 @@ export default function ProposalDetailScreen() {
               {isProcessing ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.acceptText}>Accept & Create Deal</Text>
+                <AppText style={styles.acceptText}>
+                  Accept & Create Deal
+                </AppText>
               )}
             </TouchableOpacity>
           </View>
@@ -278,7 +284,7 @@ export default function ProposalDetailScreen() {
             {isProcessing ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.acceptText}>Accept & Fund Deal</Text>
+              <AppText style={styles.acceptText}>Accept & Fund Deal</AppText>
             )}
           </TouchableOpacity>
         )}
@@ -296,7 +302,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  title: { fontSize: 22, fontWeight: "bold", color: "#003366", flex: 1 },
+  title: { fontSize: 22, fontWeight: "bold", color: "#010e5a", flex: 1 },
   statusBadge: {
     backgroundColor: "#e5e7eb",
     alignSelf: "flex-start",
@@ -328,7 +334,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#eee",
   },
-  fileName: { flex: 1, marginLeft: 10, fontSize: 14, color: "#003366" },
+  fileName: { flex: 1, marginLeft: 10, fontSize: 14, color: "#010e5a" },
   milestoneCard: {
     backgroundColor: "#fff",
     padding: 16,
@@ -343,7 +349,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
   },
-  milestoneAmount: { fontWeight: "bold", color: "#003366" },
+  milestoneAmount: { fontWeight: "bold", color: "#010e5a" },
   milestoneDate: { fontSize: 12, color: "#999" },
   summaryCard: {
     backgroundColor: "#fff",

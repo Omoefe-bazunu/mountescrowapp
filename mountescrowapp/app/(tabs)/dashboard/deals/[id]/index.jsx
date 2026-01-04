@@ -17,6 +17,7 @@ import apiClient from "../../../../../src/api/apiClient";
 import { MilestoneCard } from "./_components/MilestoneCard";
 import { CountdownBanner } from "./_components/CountdownBanner";
 import { RequestDisputeModal } from "./_components/RequestDisputeModal";
+import { AppText } from "../../../../../components/ui/AppText";
 
 const formatNumber = (num) => {
   return new Intl.NumberFormat("en-NG", {
@@ -103,7 +104,7 @@ export default function DealDetailScreen() {
     return (
       <ActivityIndicator style={{ flex: 1 }} size="large" color="#f97316" />
     );
-  if (!deal) return <Text>Deal not found</Text>;
+  if (!deal) return <AppText>Deal not found</AppText>;
 
   const completed =
     deal.milestones.filter((m) => m.status === "Completed").length || 0;
@@ -129,23 +130,23 @@ export default function DealDetailScreen() {
       <View style={styles.card}>
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>{deal.projectTitle}</Text>
-            <Text style={styles.dateSub}>
+            <AppText style={styles.title}>{deal.projectTitle}</AppText>
+            <AppText style={styles.dateSub}>
               Created on {formatDate(deal.createdAt)}
-            </Text>
+            </AppText>
           </View>
           <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>{deal.status}</Text>
+            <AppText style={styles.statusText}>{deal.status}</AppText>
           </View>
         </View>
 
         {/* Progress Bar */}
         <View style={styles.progressSection}>
           <View style={styles.progressLabelRow}>
-            <Text style={styles.progressLabel}>Progress</Text>
-            <Text style={styles.progressCount}>
+            <AppText style={styles.progressLabel}>Progress</AppText>
+            <AppText style={styles.progressCount}>
               {completed} / {total} Completed
-            </Text>
+            </AppText>
           </View>
           <View style={styles.progressBarBg}>
             <View
@@ -180,20 +181,20 @@ export default function DealDetailScreen() {
           {isProcessing ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.fundText}>
+            <AppText style={styles.fundText}>
               Fund Deal Now (₦
               {formatNumber(
                 deal.totalAmount + deal.escrowFee * (deal.escrowFeePayer / 100)
               )}
               )
-            </Text>
+            </AppText>
           )}
         </TouchableOpacity>
       )}
 
       {/* Milestones */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Milestones</Text>
+        <AppText style={styles.sectionTitle}>Milestones</AppText>
         {deal.milestones.map((m, i) => (
           <MilestoneCard
             key={i}
@@ -215,57 +216,57 @@ export default function DealDetailScreen() {
           onPress={() => setDisputeModalOpen(true)}
         >
           <Ionicons name="alert-circle" size={20} color="#fff" />
-          <Text style={styles.disputeText}>Raise a Dispute</Text>
+          <AppText style={styles.disputeText}>Raise a Dispute</AppText>
         </TouchableOpacity>
       )}
 
       {/* Financial Summary Breakdown */}
       <View style={styles.card}>
-        <Text style={styles.summaryTitle}>Summary</Text>
+        <AppText style={styles.summaryTitle}>Summary</AppText>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Total Project Amount</Text>
-          <Text style={styles.summaryValue}>
+          <AppText style={styles.summaryLabel}>Total Project Amount</AppText>
+          <AppText style={styles.summaryValue}>
             ₦{formatNumber(deal.totalAmount)}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Escrow Fee (Excl. VAT)</Text>
-          <Text style={styles.summaryValue}>
+          <AppText style={styles.summaryLabel}>Escrow Fee (Excl. VAT)</AppText>
+          <AppText style={styles.summaryValue}>
             ₦{formatNumber(deal.escrowFee / 1.075)}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>VAT (7.5%)</Text>
-          <Text style={styles.summaryValue}>
+          <AppText style={styles.summaryLabel}>VAT (7.5%)</AppText>
+          <AppText style={styles.summaryValue}>
             ₦{formatNumber(deal.escrowFee - deal.escrowFee / 1.075)}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.divider} />
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>
+          <AppText style={styles.summaryLabel}>
             Buyer Pays ({deal.escrowFeePayer}%)
-          </Text>
-          <Text style={styles.summaryValue}>
+          </AppText>
+          <AppText style={styles.summaryValue}>
             ₦{formatNumber(deal.escrowFee * (deal.escrowFeePayer / 100))}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>
+          <AppText style={styles.summaryLabel}>
             Seller Pays ({100 - deal.escrowFeePayer}%)
-          </Text>
-          <Text style={styles.summaryValue}>
+          </AppText>
+          <AppText style={styles.summaryValue}>
             ₦
             {formatNumber(deal.escrowFee * ((100 - deal.escrowFeePayer) / 100))}
-          </Text>
+          </AppText>
         </View>
         <View style={[styles.summaryRow, { marginTop: 10 }]}>
-          <Text style={styles.totalLabel}>Amount Buyer Must Fund</Text>
-          <Text style={styles.totalValue}>
+          <AppText style={styles.totalLabel}>Amount Buyer Must Fund</AppText>
+          <AppText style={styles.totalValue}>
             ₦
             {formatNumber(
               deal.totalAmount + deal.escrowFee * (deal.escrowFeePayer / 100)
             )}
-          </Text>
+          </AppText>
         </View>
       </View>
 
@@ -294,10 +295,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
-  title: { fontSize: 22, fontWeight: "bold", color: "#003366" },
+  title: { fontSize: 22, fontWeight: "bold", color: "#010e5a" },
   dateSub: { fontSize: 13, color: "#666", marginTop: 4 },
   statusBadge: {
-    backgroundColor: "#003366",
+    backgroundColor: "#010e5a",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,

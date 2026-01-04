@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../../contexts/AuthContexts";
 import apiClient from "../../../../src/api/apiClient";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { AppText } from "../../../../components/ui/AppText";
 
 const kycFormSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -123,16 +124,16 @@ export default function KycScreen() {
     return (
       <View style={styles.successContainer}>
         <Ionicons name="checkmark-circle" size={80} color="#16a34a" />
-        <Text style={styles.successTitle}>KYC Approved!</Text>
-        <Text style={styles.successSub}>Your identity is verified.</Text>
-        <Text style={styles.successSub}>
+        <AppText style={styles.successTitle}>KYC Approved!</AppText>
+        <AppText style={styles.successSub}>Your identity is verified.</AppText>
+        <AppText style={styles.successSub}>
           Your wallet is ready for transactions.
-        </Text>
+        </AppText>
         <TouchableOpacity
           style={styles.walletBtn}
           onPress={() => router.push("/dashboard/wallet")}
         >
-          <Text style={styles.walletBtnText}>Go to Wallet</Text>
+          <AppText style={styles.walletBtnText}>Go to Wallet</AppText>
         </TouchableOpacity>
       </View>
     );
@@ -143,21 +144,21 @@ export default function KycScreen() {
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
     >
-      <Text style={styles.title}>KYC Verification</Text>
-      <Text style={styles.subtitle}>
+      <AppText style={styles.title}>KYC Verification</AppText>
+      <AppText style={styles.subtitle}>
         Complete this to access wallet features.
-      </Text>
+      </AppText>
 
       {status === "rejected" && (
         <View style={styles.rejectBanner}>
-          <Text style={styles.rejectText}>
+          <AppText style={styles.rejectText}>
             Rejected: {userData.rejectionReason}
-          </Text>
+          </AppText>
         </View>
       )}
 
       <View style={styles.form}>
-        <Text style={styles.label}>First Name</Text>
+        <AppText style={styles.label}>First Name</AppText>
         <Controller
           control={control}
           name="firstName"
@@ -171,10 +172,10 @@ export default function KycScreen() {
           )}
         />
         {errors.firstName && (
-          <Text style={styles.errorText}>{errors.firstName.message}</Text>
+          <AppText style={styles.errorText}>{errors.firstName.message}</AppText>
         )}
 
-        <Text style={styles.label}>Middle Name (Optional)</Text>
+        <AppText style={styles.label}>Middle Name (Optional)</AppText>
         <Controller
           control={control}
           name="middleName"
@@ -188,7 +189,7 @@ export default function KycScreen() {
           )}
         />
 
-        <Text style={styles.label}>Last Name</Text>
+        <AppText style={styles.label}>Last Name</AppText>
         <Controller
           control={control}
           name="lastName"
@@ -202,10 +203,10 @@ export default function KycScreen() {
           )}
         />
         {errors.lastName && (
-          <Text style={styles.errorText}>{errors.lastName.message}</Text>
+          <AppText style={styles.errorText}>{errors.lastName.message}</AppText>
         )}
 
-        <Text style={styles.label}>Phone Number</Text>
+        <AppText style={styles.label}>Phone Number</AppText>
         <Controller
           control={control}
           name="phone"
@@ -220,10 +221,10 @@ export default function KycScreen() {
           )}
         />
         {errors.phone && (
-          <Text style={styles.errorText}>{errors.phone.message}</Text>
+          <AppText style={styles.errorText}>{errors.phone.message}</AppText>
         )}
 
-        <Text style={styles.label}>Gender</Text>
+        <AppText style={styles.label}>Gender</AppText>
         <View style={styles.genderContainer}>
           {["M", "F"].map((g) => (
             <TouchableOpacity
@@ -234,19 +235,19 @@ export default function KycScreen() {
               ]}
               onPress={() => setValue("gender", g)}
             >
-              <Text
+              <AppText
                 style={[
                   styles.genderBtnText,
                   selectedGender === g && styles.genderBtnTextActive,
                 ]}
               >
                 {g === "M" ? "Male" : "Female"}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.label}>Date of Birth</Text>
+        <AppText style={styles.label}>Date of Birth</AppText>
         <Controller
           control={control}
           name="dob"
@@ -255,13 +256,13 @@ export default function KycScreen() {
               style={styles.datePickerBtn}
               onPress={() => setShowDatePicker(true)}
             >
-              <Text>{value ? value.toDateString() : "Select Date"}</Text>
+              <AppText>{value ? value.toDateString() : "Select Date"}</AppText>
               <Ionicons name="calendar-outline" size={20} color="#666" />
             </TouchableOpacity>
           )}
         />
         {errors.dob && (
-          <Text style={styles.errorText}>{errors.dob.message}</Text>
+          <AppText style={styles.errorText}>{errors.dob.message}</AppText>
         )}
         {showDatePicker && (
           <DateTimePicker
@@ -275,7 +276,7 @@ export default function KycScreen() {
           />
         )}
 
-        <Text style={styles.label}>BVN (11 Digits)</Text>
+        <AppText style={styles.label}>BVN (11 Digits)</AppText>
         <Controller
           control={control}
           name="bvn"
@@ -291,7 +292,7 @@ export default function KycScreen() {
           )}
         />
         {errors.bvn && (
-          <Text style={styles.errorText}>{errors.bvn.message}</Text>
+          <AppText style={styles.errorText}>{errors.bvn.message}</AppText>
         )}
 
         <TouchableOpacity
@@ -302,7 +303,7 @@ export default function KycScreen() {
           {submitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitText}>Submit & Verify</Text>
+            <AppText style={styles.submitText}>Submit & Verify</AppText>
           )}
         </TouchableOpacity>
       </View>
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   centered: { flex: 1, justifyContent: "center" },
   scrollContent: { padding: 20 },
-  title: { fontSize: 24, fontWeight: "bold", color: "#003366" },
+  title: { fontSize: 24, fontWeight: "bold", color: "#010e5a" },
   subtitle: { color: "#666", marginBottom: 20 },
   rejectBanner: {
     backgroundColor: "#fef2f2",
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     alignItems: "center",
   },
-  genderBtnActive: { backgroundColor: "#003366", borderColor: "#003366" },
+  genderBtnActive: { backgroundColor: "#010e5a", borderColor: "#010e5a" },
   genderBtnText: { color: "#666", fontWeight: "600" },
   genderBtnTextActive: { color: "#fff" },
   datePickerBtn: {
@@ -372,12 +373,12 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#003366",
+    color: "#010e5a",
     marginTop: 20,
   },
   successSub: { color: "#666", textAlign: "center", marginTop: 10 },
   walletBtn: {
-    backgroundColor: "#003366",
+    backgroundColor: "#010e5a",
     paddingHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 8,

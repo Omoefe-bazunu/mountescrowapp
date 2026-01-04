@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import apiClient from "../../../../../../src/api/apiClient";
+import { AppText } from "../../../../../../components/ui/AppText";
 
 export function RequestRevisionModal({
   isOpen,
@@ -65,11 +66,11 @@ export function RequestRevisionModal({
     <Modal visible={isOpen} animationType="fade" transparent>
       <View style={styles.overlay}>
         <View style={styles.content}>
-          <Text style={styles.title}>Request Revision</Text>
-          <Text style={styles.subtitle}>
+          <AppText style={styles.title}>Request Revision</AppText>
+          <AppText style={styles.subtitle}>
             Explain what changes are needed. This will notify the seller and
             pause the auto-approval timer.
-          </Text>
+          </AppText>
 
           <TextInput
             style={styles.textArea}
@@ -81,7 +82,7 @@ export function RequestRevisionModal({
 
           <View style={styles.actions}>
             <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <AppText style={styles.cancelText}>Cancel</AppText>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleSubmit}
@@ -91,7 +92,7 @@ export function RequestRevisionModal({
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.submitText}>Send Request</Text>
+                <AppText style={styles.submitText}>Send Request</AppText>
               )}
             </TouchableOpacity>
           </View>

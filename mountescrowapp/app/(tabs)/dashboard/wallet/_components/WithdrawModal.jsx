@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Added for security icon
 import apiClient from "../../../../../src/api/apiClient";
+import { AppText } from "../../../../../components/ui/AppText";
 
 export default function WithdrawModal({
   isOpen,
@@ -139,7 +140,7 @@ export default function WithdrawModal({
     <Modal visible={isOpen} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.content}>
-          <Text style={styles.title}>Withdraw Funds</Text>
+          <AppText style={styles.title}>Withdraw Funds</AppText>
 
           {step === 1 ? (
             /* STEP 1: OTP VERIFICATION */
@@ -150,10 +151,10 @@ export default function WithdrawModal({
 
               {!otpSent ? (
                 <>
-                  <Text style={styles.otpDesc}>
+                  <AppText style={styles.otpDesc}>
                     To protect your funds, we need to verify your identity. A
                     6-digit code will be sent to your email.
-                  </Text>
+                  </AppText>
                   <TouchableOpacity
                     style={styles.submitBtn}
                     onPress={handleSendOTP}
@@ -162,19 +163,21 @@ export default function WithdrawModal({
                     {otpLoading ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text style={styles.submitText}>Send Code</Text>
+                      <AppText style={styles.submitText}>Send Code</AppText>
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleClose}
                     style={{ marginTop: 15 }}
                   >
-                    <Text style={styles.cancelText}>Cancel</Text>
+                    <AppText style={styles.cancelText}>Cancel</AppText>
                   </TouchableOpacity>
                 </>
               ) : (
                 <>
-                  <Text style={styles.label}>Enter Verification Code</Text>
+                  <AppText style={styles.label}>
+                    Enter Verification Code
+                  </AppText>
                   <TextInput
                     style={styles.otpInput}
                     placeholder="000000"
@@ -194,16 +197,18 @@ export default function WithdrawModal({
                     {otpLoading ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text style={styles.submitText}>Verify & Continue</Text>
+                      <AppText style={styles.submitText}>
+                        Verify & Continue
+                      </AppText>
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleSendOTP}
                     style={{ marginTop: 15 }}
                   >
-                    <Text style={styles.resendText}>
+                    <AppText style={styles.resendText}>
                       Didn&apos;t get code? Resend
-                    </Text>
+                    </AppText>
                   </TouchableOpacity>
                 </>
               )}
@@ -211,7 +216,7 @@ export default function WithdrawModal({
           ) : (
             /* STEP 2: ORIGINAL FORM (UNTOUCHED) */
             <View>
-              <Text style={styles.label}>Amount (₦)</Text>
+              <AppText style={styles.label}>Amount (₦)</AppText>
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
@@ -219,18 +224,18 @@ export default function WithdrawModal({
                 value={form.amount}
                 onChangeText={(t) => setForm({ ...form, amount: t })}
               />
-              <Text style={styles.balanceHint}>
+              <AppText style={styles.balanceHint}>
                 Balance: ₦{Number(balance).toLocaleString()}
-              </Text>
+              </AppText>
 
-              <Text style={styles.label}>Select Bank</Text>
+              <AppText style={styles.label}>Select Bank</AppText>
               <TouchableOpacity
                 style={styles.input}
                 onPress={() => setShowBankList(!showBankList)}
               >
-                <Text style={{ color: form.bankName ? "#333" : "#999" }}>
+                <AppText style={{ color: form.bankName ? "#333" : "#999" }}>
                   {form.bankName || "Select bank..."}
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               {showBankList && (
@@ -258,20 +263,22 @@ export default function WithdrawModal({
                           setSearchQuery("");
                         }}
                       >
-                        <Text style={styles.bankItemText}>{item.bankName}</Text>
+                        <AppText style={styles.bankItemText}>
+                          {item.bankName}
+                        </AppText>
                       </TouchableOpacity>
                     )}
                     style={{ maxHeight: 180 }}
                     ListEmptyComponent={
-                      <Text style={styles.emptyText}>
+                      <AppText style={styles.emptyText}>
                         No matching banks found.
-                      </Text>
+                      </AppText>
                     }
                   />
                 </View>
               )}
 
-              <Text style={styles.label}>Account Number</Text>
+              <AppText style={styles.label}>Account Number</AppText>
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
@@ -283,7 +290,7 @@ export default function WithdrawModal({
 
               <View style={styles.actions}>
                 <TouchableOpacity onPress={handleClose}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <AppText style={styles.cancelText}>Cancel</AppText>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.submitBtn}
@@ -293,7 +300,7 @@ export default function WithdrawModal({
                   {loading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.submitText}>Withdraw</Text>
+                    <AppText style={styles.submitText}>Withdraw</AppText>
                   )}
                 </TouchableOpacity>
               </View>

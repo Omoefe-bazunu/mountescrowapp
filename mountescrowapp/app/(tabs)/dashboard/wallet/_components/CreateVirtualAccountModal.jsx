@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import apiClient from "../../../../../src/api/apiClient";
 import { useAuth } from "../../../../../contexts/AuthContexts";
+import { AppText } from "../../../../../components/ui/AppText";
 
 export default function CreateVirtualAccountModal({
   isOpen,
@@ -59,13 +60,13 @@ export default function CreateVirtualAccountModal({
       <View style={styles.overlay}>
         <View style={styles.content}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={styles.title}>Create Virtual Account</Text>
-            <Text style={styles.subtitle}>
+            <AppText style={styles.title}>Create Virtual Account</AppText>
+            <AppText style={styles.subtitle}>
               Link a secure funding account to your profile.
-            </Text>
+            </AppText>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
+              <AppText style={styles.label}>Email</AppText>
               <TextInput
                 style={[styles.input, styles.disabled]}
                 value={form.email}
@@ -74,7 +75,7 @@ export default function CreateVirtualAccountModal({
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>First Name</Text>
+              <AppText style={styles.label}>First Name</AppText>
               <TextInput
                 style={styles.input}
                 value={form.firstName}
@@ -84,7 +85,7 @@ export default function CreateVirtualAccountModal({
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Last Name</Text>
+              <AppText style={styles.label}>Last Name</AppText>
               <TextInput
                 style={styles.input}
                 value={form.lastName}
@@ -94,7 +95,7 @@ export default function CreateVirtualAccountModal({
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Phone Number</Text>
+              <AppText style={styles.label}>Phone Number</AppText>
               <TextInput
                 style={styles.input}
                 value={form.phone}
@@ -110,7 +111,7 @@ export default function CreateVirtualAccountModal({
                 onPress={onClose}
                 disabled={loading}
               >
-                <Text style={styles.cancelText}>Cancel</Text>
+                <AppText style={styles.cancelText}>Cancel</AppText>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.submitBtn}
@@ -120,7 +121,7 @@ export default function CreateVirtualAccountModal({
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.submitText}>Create Account</Text>
+                  <AppText style={styles.submitText}>Create Account</AppText>
                 )}
               </TouchableOpacity>
             </View>

@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ImageBackground } from "react-native";
+import { AppText } from "../ui/AppText";
 
 export default function OurStory() {
   return (
@@ -10,17 +11,17 @@ export default function OurStory() {
       resizeMode="cover"
     >
       <View style={styles.content}>
-        <Text style={styles.title}>OUR STORY</Text>
+        <AppText style={styles.title}>OUR STORY</AppText>
         <View style={styles.textContainer}>
-          <Text style={styles.paragraph}>
+          <AppText style={styles.paragraph}>
             Mountescrow was founded with a bold vision: to transform digital
             transactions into a secure, transparent, and empowering ecosystem
             for buyers and sellers alike. We understand the hurdles of online
             commerce—fears of fraud, distrust in unfamiliar parties, and the
             need for seamless payment safety. This drove us to create a solution
             that fosters confidence and eliminates uncertainty in every deal.
-          </Text>
-          <Text style={[styles.paragraph, styles.marginTop]}>
+          </AppText>
+          <AppText style={[styles.paragraph, styles.marginTop]}>
             Mountescrow acts as a steadfast partner, ensuring funds are
             protected until transaction terms are met. Fostering collaboration
             and trust between parties. Beyond single transactions, we are
@@ -28,7 +29,7 @@ export default function OurStory() {
             milestone-based payments streamline project workflows, while our
             multi-party transaction services simplify even the most complex
             deals.
-          </Text>
+          </AppText>
         </View>
       </View>
     </ImageBackground>

@@ -16,6 +16,7 @@ import {
   HandCoins,
 } from "lucide-react-native";
 import { Fonts } from "../../constants/Fonts";
+import { AppText } from "../ui/AppText";
 
 const { width } = Dimensions.get("window");
 
@@ -104,11 +105,11 @@ export default function HowItWorksSection() {
       resizeMode="cover"
     >
       <View style={styles.howSection}>
-        <Text style={styles.howTitle}>HOW MOUNTESCROW WORKS</Text>
-        <Text style={[styles.howSubtitle, { fontFamily: Fonts.body }]}>
+        <AppText style={styles.howTitle}>HOW MOUNTESCROW WORKS</AppText>
+        <AppText style={[styles.howSubtitle, { fontFamily: Fonts.body }]}>
           Each transaction follows a secure, transparent, and automated flow,
           protecting both buyer and seller every step of the way.
-        </Text>
+        </AppText>
         <View style={styles.howGrid}>
           {steps.map((step, i) => {
             const Icon = step.Icon;
@@ -137,21 +138,21 @@ export default function HowItWorksSection() {
                   ]}
                 >
                   <View style={styles.number}>
-                    <Text style={styles.numberText}>{i + 1}</Text>
+                    <AppText style={styles.numberText}>{i + 1}</AppText>
                   </View>
                   <Icon size={40} color="#fff" />
                 </Animated.View>
-                <Text
+                <AppText
                   style={[
                     styles.howMain,
                     { fontFamily: Fonts.body, fontWeight: "bold" },
                   ]}
                 >
                   {step.main}
-                </Text>
-                <Text style={[styles.howText, { fontFamily: Fonts.body }]}>
+                </AppText>
+                <AppText style={[styles.howText, { fontFamily: Fonts.body }]}>
                   {step.text}
-                </Text>
+                </AppText>
               </Animated.View>
             );
           })}

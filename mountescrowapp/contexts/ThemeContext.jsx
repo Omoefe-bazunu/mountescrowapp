@@ -13,14 +13,14 @@ const lightColors = {
   card: "#FFFFFF",
   error: "#EF4444",
   success: "#059669",
-  warning: "#F59E0B",
+  warning: "#f97316",
   skeleton: "#E0E0E0",
   skeletonHighlight: "#F5F5F5",
 };
 
 const darkColors = {
-  primary: "#3B82F6",
-  secondary: "#FBBF24",
+  primary: "#ffffff",
+  secondary: "#f97316",
   background: "#111827",
   surface: "#1F2937",
   text: "#F9FAFB",
@@ -29,7 +29,7 @@ const darkColors = {
   card: "#1F2937",
   error: "#F87171",
   success: "#34D399",
-  warning: "#FBBF24",
+  warning: "#f97316",
   skeleton: "#374151",
   skeletonHighlight: "#4B5563",
 };

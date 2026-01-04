@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import apiClient from "../../../../../../src/api/apiClient";
+import { AppText } from "../../../../../../components/ui/AppText";
 
 export function CountdownBanner({
   milestone,
@@ -72,10 +73,10 @@ export function CountdownBanner({
     return (
       <View style={[styles.banner, styles.holdBanner]}>
         <Ionicons name="pause-circle" size={20} color="#92400e" />
-        <Text style={styles.holdText}>
-          <Text style={{ fontWeight: "bold" }}>Countdown on Hold.</Text> Kindly
-          review the milestone and take action.
-        </Text>
+        <AppText style={styles.holdText}>
+          <AppText style={{ fontWeight: "bold" }}>Countdown on Hold.</AppText>{" "}
+          Kindly review the milestone and take action.
+        </AppText>
       </View>
     );
   }
@@ -86,10 +87,10 @@ export function CountdownBanner({
     <View style={[styles.banner, styles.activeBanner]}>
       <View style={styles.timerRow}>
         <Ionicons name="time" size={18} color="#1d4ed8" />
-        <Text style={styles.timerText}>
+        <AppText style={styles.timerText}>
           Auto-Approval: {timeLeft.hours > 0 && `${timeLeft.hours}h `}
           {timeLeft.minutes}m {timeLeft.seconds}s remaining
-        </Text>
+        </AppText>
       </View>
       {isBuyer && (
         <TouchableOpacity
@@ -111,7 +112,7 @@ export function CountdownBanner({
           {cancelling ? (
             <ActivityIndicator size="small" color="#1d4ed8" />
           ) : (
-            <Text style={styles.cancelText}>Stop</Text>
+            <AppText style={styles.cancelText}>Stop</AppText>
           )}
         </TouchableOpacity>
       )}

@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { router } from "expo-router";
-import { Button } from "../../components/ui/Button"; // Assuming your Button component is a styled element
+import { Button } from "../../components/ui/Button";
+import { useTheme } from "../../contexts/ThemeContext";
+import { AppText } from "../../components/ui/AppText";
 
 // Import Reanimated components and hooks
 import Animated, {
@@ -29,8 +31,8 @@ const slides = [
     title: "Welcome to Mountescrow",
     description:
       "Experience seamless and secure transactions with our escrow platform built for peace of mind in every deal.",
-    icon: <ShieldCheck size={80} color="#FFFFFF" />, // Secure icon
-    backgroundColor: "#010e5a", // Deep blue
+    icon: <ShieldCheck size={80} color="#FFFFFF" />,
+    backgroundColor: "#010e5a",
   },
   {
     id: "2",
@@ -48,32 +50,18 @@ const slides = [
     icon: <Bell size={80} color="#FFFFFF" />,
     backgroundColor: "#f97316",
   },
-  // {
-  //   id: "4",
-  //   title: "Global Access",
-  //   description:
-  //     "Use SafeFunds for both local and international transactions anytime, anywhere, across currencies.",
-  //   icon: <Globe size={80} color="#FFFFFF" />,
-  //   backgroundColor: "#0288D1",
-  // },
 ];
 
-// Reanimated FlatList (FlashList)
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 
 export default function OnboardingScreen() {
+  const { colors } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef(null);
 
-  // Shared Value for background color interpolation
   const scrollOffset = useSharedValue(0);
-
-  // Shared Value for footer/button visibility animation (optional)
   const footerY = useSharedValue(height);
 
-  // --- Animation Hooks ---
-
-  // Animate the footer's position on mount
   React.useEffect(() => {
     footerY.value = withSpring(0, { damping: 15, stiffness: 100 });
   }, []);
@@ -84,12 +72,11 @@ export default function OnboardingScreen() {
     };
   });
 
-  // Animated style for the main container background color
   const backgroundAnimatedStyle = useAnimatedStyle(() => {
     const backgroundColor = interpolateColor(
       scrollOffset.value,
-      slides.map((_, i) => i * width), // Input range based on scroll position
-      slides.map((slide) => slide.backgroundColor) // Output colors
+      slides.map((_, i) => i * width),
+      slides.map((slide) => slide.backgroundColor)
     );
 
     return {
@@ -97,20 +84,17 @@ export default function OnboardingScreen() {
     };
   });
 
-  // --- Handlers ---
-
   const onScroll = (event) => {
     scrollOffset.value = event.nativeEvent.contentOffset.x;
   };
 
   const onMomentumScrollEnd = (event) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / width);
-    // Use runOnJS to update the state on the main thread
     runOnJS(setCurrentIndex)(index);
   };
 
   const navigateToNextScreen = () => {
-    router.replace("/(tabs)/home");
+    router.replace("/(auth)/login");
   };
 
   const handleNext = () => {
@@ -119,7 +103,6 @@ export default function OnboardingScreen() {
       flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
       setCurrentIndex(nextIndex);
     } else {
-      // Animate the footer off-screen before navigating
       footerY.value = withTiming(height, { duration: 300 }, (isFinished) => {
         if (isFinished) {
           runOnJS(navigateToNextScreen)();
@@ -136,15 +119,16 @@ export default function OnboardingScreen() {
     });
   };
 
-  // --- Components ---
-
   const renderSlide = ({ item }) => (
-    // Note: The background color is now applied to the main Animated.View container
     <View style={styles.slide}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>{item.icon}</View>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.description}</Text>
+        <AppText allowFontScaling={false} style={[styles.title]}>
+          {item.title}
+        </AppText>
+        <AppText allowFontScaling={false} style={[styles.description]}>
+          {item.description}
+        </AppText>
       </View>
     </View>
   );
@@ -152,8 +136,9 @@ export default function OnboardingScreen() {
   const Indicator = ({ index }) => {
     const activeWidth = 24;
     const inactiveWidth = 8;
-    const activeColor = "#FFFFFF";
-    const inactiveColor = "rgba(255, 255, 255, 0.4)";
+    // We use primary color for active indicator in the white footer
+    const activeColor = colors.primary;
+    const inactiveColor = colors.border;
 
     const indicatorAnimatedStyle = useAnimatedStyle(() => {
       const isCurrent = index === currentIndex;
@@ -181,12 +166,18 @@ export default function OnboardingScreen() {
         showsHorizontalScrollIndicator={false}
         estimatedItemSize={width}
         keyExtractor={(item) => item.id}
-        onScroll={onScroll} // Use the Reanimated onScroll handler
+        onScroll={onScroll}
         onMomentumScrollEnd={onMomentumScrollEnd}
-        scrollEventThrottle={16} // Important for smooth animation updates
+        scrollEventThrottle={16}
       />
 
-      <Animated.View style={[styles.footer, footerAnimatedStyle]}>
+      <Animated.View
+        style={[
+          styles.footer,
+          footerAnimatedStyle,
+          { backgroundColor: colors.surface },
+        ]}
+      >
         <View style={styles.indicators}>
           {slides.map((_, index) => (
             <Indicator key={index} index={index} />
@@ -195,15 +186,24 @@ export default function OnboardingScreen() {
 
         <View style={styles.buttons}>
           <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-            <Text style={styles.skipText}>Skip</Text>
+            <AppText
+              allowFontScaling={false}
+              style={[styles.skipText, { color: colors.textSecondary }]}
+            >
+              Skip
+            </AppText>
           </TouchableOpacity>
 
-          {/* Using a primary button style for maximum impact */}
           <Button
             title={currentIndex === slides.length - 1 ? "Get Started" : "Next"}
             onPress={handleNext}
-            variant="primary" // Assuming 'primary' is a high-contrast style
+            variant="primary"
             style={styles.nextButton}
+            // Ensure the text color is high-contrast (surface color) and uses your font
+            textStyle={{
+              color: colors.surface, // This will be white in most themes
+              fontSize: 18,
+            }}
           />
         </View>
       </Animated.View>
@@ -214,11 +214,10 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // Background color is dynamically set by backgroundAnimatedStyle
   },
   slide: {
     width,
-    height: height * 0.8, // Take up most of the screen
+    height: height * 0.75,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -228,11 +227,10 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginBottom: 40,
-    // Add a slight elevation or shadow for depth
   },
   title: {
-    fontSize: 34,
-    fontWeight: "800", // Extra bold for a professional look
+    fontSize: 28,
+    fontWeight: "800",
     color: "#FFFFFF",
     textAlign: "center",
     marginBottom: 12,
@@ -240,7 +238,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 17,
-    color: "rgba(255, 255, 255, 0.8)", // Slightly transparent white
+    color: "rgba(255, 255, 255, 0.9)",
     textAlign: "center",
     lineHeight: 24,
     maxWidth: 300,
@@ -253,19 +251,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingTop: 20,
     paddingBottom: 40,
-    backgroundColor: "#FFFFFF", // Clean white footer
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     elevation: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 12,
   },
   indicators: {
     flexDirection: "row",
-    justifyContent: "flex-start", // Align left for a modern look
-    marginBottom: 20,
+    justifyContent: "center",
+    marginBottom: 30,
   },
   indicator: {
     height: 8,
@@ -279,14 +276,13 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 5,
   },
   skipText: {
     fontSize: 16,
-    color: "#6B7280",
     fontWeight: "600",
   },
   nextButton: {
-    minWidth: 150,
+    minWidth: 160,
   },
 });

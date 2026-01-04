@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../../contexts/AuthContexts";
 import { getProposals } from "../../../../src/services/proposal.service";
+import { AppText } from "../../../../components/ui/AppText";
 
 export default function ProposalsScreen() {
   const { user, loading: authLoading } = useAuth();
@@ -80,20 +81,22 @@ export default function ProposalsScreen() {
         onPress={() => router.push(`/(tabs)/dashboard/proposals/${item.id}`)}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.title} numberOfLines={1}>
+          <AppText style={styles.title} numberOfLines={1}>
             {item.projectTitle}
-          </Text>
-          <Text style={[styles.status, { color: getStatusColor(item.status) }]}>
+          </AppText>
+          <AppText
+            style={[styles.status, { color: getStatusColor(item.status) }]}
+          >
             {item.status}
-          </Text>
+          </AppText>
         </View>
-        <Text style={styles.subText}>
+        <AppText style={styles.subText}>
           {isBuyer ? "Seller" : "Buyer"}: {otherParty}
-        </Text>
+        </AppText>
         <View style={styles.cardFooter}>
-          <Text style={styles.amount}>
+          <AppText style={styles.amount}>
             ₦{(item.totalAmount + item.escrowFee).toLocaleString()}
-          </Text>
+          </AppText>
           <Ionicons name="chevron-forward" size={18} color="#999" />
         </View>
       </TouchableOpacity>
@@ -134,7 +137,7 @@ export default function ProposalsScreen() {
           onPress={() => router.push("/(tabs)/dashboard/proposals/new")}
         >
           <Ionicons name="add" size={20} color="#fff" />
-          <Text style={styles.newBtnText}>New</Text>
+          <AppText style={styles.newBtnText}>New</AppText>
         </TouchableOpacity>
       </View>
 
@@ -158,14 +161,14 @@ export default function ProposalsScreen() {
               size={50}
               color="#ccc"
             />
-            <Text style={styles.emptyTitle}>
+            <AppText style={styles.emptyTitle}>
               {searchQuery ? "No results found" : "No proposals yet"}
-            </Text>
-            <Text style={styles.emptySub}>
+            </AppText>
+            <AppText style={styles.emptySub}>
               {searchQuery
                 ? `We couldn't find "${searchQuery}"`
                 : "Your created and received proposals will appear here."}
-            </Text>
+            </AppText>
           </View>
         }
       />
@@ -226,7 +229,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 4,
   },
-  title: { fontSize: 16, fontWeight: "bold", color: "#003366", flex: 1 },
+  title: { fontSize: 16, fontWeight: "bold", color: "#010e5a", flex: 1 },
   status: { fontSize: 12, fontWeight: "600" },
   subText: { fontSize: 13, color: "#666", marginBottom: 12 },
   cardFooter: {

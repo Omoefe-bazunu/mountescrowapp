@@ -19,7 +19,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { updateProposal } from "../../../../../../../src/services/proposal.service";
 import apiClient from "../../../../../../../src/api/apiClient";
-
+import { AppText } from "../../../../../../../components/ui/AppText";
 // Validation Schemas
 const milestoneSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -165,7 +165,7 @@ export function EditProposalForm({ proposal, proposalId }) {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Project Title</Text>
+        <AppText style={styles.label}>Project Title</AppText>
         <Controller
           control={control}
           name="projectTitle"
@@ -179,7 +179,7 @@ export function EditProposalForm({ proposal, proposalId }) {
           )}
         />
 
-        <Text style={styles.label}>Description</Text>
+        <AppText style={styles.label}>Description</AppText>
         <Controller
           control={control}
           name="description"
@@ -194,7 +194,7 @@ export function EditProposalForm({ proposal, proposalId }) {
           )}
         />
 
-        <Text style={styles.label}>Who pays the escrow fee?</Text>
+        <AppText style={styles.label}>Who pays the escrow fee?</AppText>
         <View style={styles.pickerContainer}>
           <Controller
             control={control}
@@ -226,7 +226,7 @@ export function EditProposalForm({ proposal, proposalId }) {
       </View>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Milestones</Text>
+        <AppText style={styles.sectionTitle}>Milestones</AppText>
         <TouchableOpacity
           style={styles.addBtn}
           onPress={() =>
@@ -239,14 +239,14 @@ export function EditProposalForm({ proposal, proposalId }) {
           }
         >
           <Ionicons name="add-circle" size={20} color="#f97316" />
-          <Text style={styles.addText}>Add Milestone</Text>
+          <AppText style={styles.addText}>Add Milestone</AppText>
         </TouchableOpacity>
       </View>
 
       {fields.map((item, index) => (
         <View key={item.id} style={styles.milestoneCard}>
           <View style={styles.mHeaderRow}>
-            <Text style={styles.mNumberLabel}>Milestone {index + 1}</Text>
+            <AppText style={styles.mNumberLabel}>Milestone {index + 1}</AppText>
             <TouchableOpacity onPress={() => remove(index)}>
               <Ionicons name="trash-outline" size={20} color="#ef4444" />
             </TouchableOpacity>
@@ -297,14 +297,14 @@ export function EditProposalForm({ proposal, proposalId }) {
             style={styles.dateBtn}
             onPress={() => setShowDatePicker(index)}
           >
-            <Text style={styles.dateText}>
+            <AppText style={styles.dateText}>
               Due Date:{" "}
               {watchedMilestones[index]?.dueDate
                 ? new Date(
                     watchedMilestones[index].dueDate
                   ).toLocaleDateString()
                 : "Select Date"}
-            </Text>
+            </AppText>
             <Ionicons name="calendar-outline" size={18} color="#666" />
           </TouchableOpacity>
 
@@ -323,44 +323,44 @@ export function EditProposalForm({ proposal, proposalId }) {
       ))}
 
       <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>Payment Summary</Text>
+        <AppText style={styles.summaryTitle}>Payment Summary</AppText>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Subtotal</Text>
-          <Text style={styles.summaryValue}>
+          <AppText style={styles.summaryLabel}>Subtotal</AppText>
+          <AppText style={styles.summaryValue}>
             ₦{totals.totalAmount.toLocaleString()}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>
+          <AppText style={styles.summaryLabel}>
             Escrow Fee (
             {(getEscrowFeePercentage(totals.totalAmount) * 100).toFixed(1)}%)
-          </Text>
-          <Text style={styles.summaryValue}>
+          </AppText>
+          <AppText style={styles.summaryValue}>
             ₦{totals.escrowFee.toLocaleString()}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>VAT (7.5%)</Text>
-          <Text style={styles.summaryValue}>
+          <AppText style={styles.summaryLabel}>VAT (7.5%)</AppText>
+          <AppText style={styles.summaryValue}>
             ₦{(totals.totalFeeInclVAT - totals.escrowFee).toLocaleString()}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.divider} />
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>
+          <AppText style={styles.summaryLabel}>
             Buyer Portion ({watchedFeePayer}%)
-          </Text>
-          <Text style={styles.summaryValue}>
+          </AppText>
+          <AppText style={styles.summaryValue}>
             ₦{totals.buyerPortion.toLocaleString()}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>
+          <AppText style={styles.summaryLabel}>
             Seller Portion ({100 - watchedFeePayer}%)
-          </Text>
-          <Text style={styles.summaryValue}>
+          </AppText>
+          <AppText style={styles.summaryValue}>
             ₦{totals.sellerPortion.toLocaleString()}
-          </Text>
+          </AppText>
         </View>
       </View>
 
@@ -369,17 +369,17 @@ export function EditProposalForm({ proposal, proposalId }) {
         <View style={styles.fraudAlert}>
           <Ionicons name="alert" size={24} color="#dc2626" />
           <View style={{ flex: 1 }}>
-            <Text style={styles.fraudTitle}>Limit Exceeded</Text>
-            <Text style={styles.fraudText}>
+            <AppText style={styles.fraudTitle}>Limit Exceeded</AppText>
+            <AppText style={styles.fraudText}>
               Project updates exceeding ₦100M require verification. Please
               contact{" "}
-              <Text
+              <AppText
                 style={styles.link}
                 onPress={() => Linking.openURL("mailto:admin@mountescrow.com")}
               >
                 Admin (admin@mountescrow.com)
-              </Text>
-            </Text>
+              </AppText>
+            </AppText>
           </View>
         </View>
       )}
@@ -392,9 +392,9 @@ export function EditProposalForm({ proposal, proposalId }) {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.submitText}>
+          <AppText style={styles.submitText}>
             {limitExceeded ? "Limit Exceeded" : "Update Proposal"}
-          </Text>
+          </AppText>
         )}
       </TouchableOpacity>
     </ScrollView>
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingHorizontal: 4,
   },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#003366" },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#010e5a" },
   addBtn: { flexDirection: "row", alignItems: "center" },
   addText: { marginLeft: 5, color: "#f97316", fontWeight: "bold" },
   milestoneCard: {
@@ -442,14 +442,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: "#003366",
+    borderLeftColor: "#010e5a",
   },
   mHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 15,
   },
-  mNumberLabel: { fontWeight: "bold", color: "#003366", fontSize: 15 },
+  mNumberLabel: { fontWeight: "bold", color: "#010e5a", fontSize: 15 },
   mInput: {
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 12,
-    color: "#003366",
+    color: "#010e5a",
   },
   summaryRow: {
     flexDirection: "row",

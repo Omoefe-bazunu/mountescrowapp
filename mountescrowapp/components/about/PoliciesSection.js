@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import { AppText } from "../ui/AppText";
 import { FilePlus, Trash2, FileText } from "lucide-react-native";
 import { Fonts } from "../../constants/Fonts";
 import {
@@ -153,11 +154,11 @@ export default function PoliciesSection() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Policies & Terms</Text>
-        <Text style={[styles.subtitle, { fontFamily: Fonts.body }]}>
+        <AppText style={styles.title}>Policies & Terms</AppText>
+        <AppText style={[styles.subtitle, { fontFamily: Fonts.body }]}>
           Our policies and terms of use are designed to be fair, transparent,
           and efficient.
-        </Text>
+        </AppText>
 
         {/* Dynamic Tabs */}
         <View style={styles.tabsContainer}>
@@ -167,7 +168,7 @@ export default function PoliciesSection() {
               style={[styles.tab, activeTab === key && styles.tabActive]}
               onPress={() => setActiveTab(key)}
             >
-              <Text
+              <AppText
                 style={[
                   styles.tabText,
                   { fontFamily: Fonts.body },
@@ -175,7 +176,7 @@ export default function PoliciesSection() {
                 ]}
               >
                 {key}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           ))}
         </View>
@@ -184,7 +185,7 @@ export default function PoliciesSection() {
         {currentPolicy && (
           <View style={styles.card}>
             <View style={styles.headerRow}>
-              <Text style={styles.cardTitle}>{activeTab}</Text>
+              <AppText style={styles.cardTitle}>{activeTab}</AppText>
 
               {/* Admin Controls */}
               {isAdmin && (
@@ -214,9 +215,9 @@ export default function PoliciesSection() {
               )}
             </View>
 
-            <Text style={[styles.cardText, { fontFamily: Fonts.body }]}>
+            <AppText style={[styles.cardText, { fontFamily: Fonts.body }]}>
               {currentPolicy.summary}
-            </Text>
+            </AppText>
 
             {/* View PDF Button */}
             {currentPolicy.pdfUrl ? (
@@ -225,18 +226,18 @@ export default function PoliciesSection() {
                 onPress={() => handleOpenPDF(currentPolicy.pdfUrl)}
               >
                 <FileText size={20} color="#fff" style={{ marginRight: 8 }} />
-                <Text
+                <AppText
                   style={[styles.pdfButtonText, { fontFamily: Fonts.body }]}
                 >
                   View Full {activeTab} PDF
-                </Text>
+                </AppText>
               </TouchableOpacity>
             ) : (
-              <Text style={styles.noPdfText}>
+              <AppText style={styles.noPdfText}>
                 {isAdmin
                   ? "No PDF uploaded yet. Use the + icon above to upload."
                   : "PDF currently unavailable."}
-              </Text>
+              </AppText>
             )}
           </View>
         )}

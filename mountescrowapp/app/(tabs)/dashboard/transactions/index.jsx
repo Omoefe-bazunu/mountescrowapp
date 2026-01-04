@@ -13,6 +13,7 @@ import {
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import apiClient from "../../../../src/api/apiClient";
+import { AppText } from "../../../../components/ui/AppText";
 
 // ✅ FIX: Moved renderTransaction OUTSIDE the component
 // This prevents the FlatList from re-rendering every row when state changes (like searching)
@@ -35,31 +36,31 @@ const renderTransaction = ({ item }) => {
         </View>
 
         <View style={styles.txDetails}>
-          <Text style={styles.txDescription}>
+          <AppText style={styles.txDescription}>
             {item.description || "Transaction"}
-          </Text>
-          <Text style={styles.txDate}>
+          </AppText>
+          <AppText style={styles.txDate}>
             {item.createdAt
               ? format(new Date(item.createdAt), "MMM dd, yyyy • p")
               : "N/A"}
-          </Text>
+          </AppText>
         </View>
 
         <View style={styles.txAmount}>
-          <Text
+          <AppText
             style={[styles.amountText, isCredit ? styles.green : styles.red]}
           >
             {isCredit ? "+" : "-"}₦
             {Number(item.amount || 0).toLocaleString("en-NG", {
               minimumFractionDigits: 2,
             })}
-          </Text>
+          </AppText>
           <View
             style={[styles.badge, styles[`badge${item.status?.toUpperCase()}`]]}
           >
-            <Text style={styles.badgeText}>
+            <AppText style={styles.badgeText}>
               {item.status?.toLowerCase() || "pending"}
-            </Text>
+            </AppText>
           </View>
         </View>
       </View>
@@ -128,7 +129,7 @@ export default function TransactionsScreen() {
           />
         </View>
 
-        <Text style={styles.filterLabel}>Filter by Type</Text>
+        <AppText style={styles.filterLabel}>Filter by Type</AppText>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -140,7 +141,7 @@ export default function TransactionsScreen() {
               style={[styles.chip, typeFilter === type && styles.activeChip]}
               onPress={() => setTypeFilter(type)}
             >
-              <Text
+              <AppText
                 style={[
                   styles.chipText,
                   typeFilter === type && styles.activeChipText,
@@ -151,7 +152,7 @@ export default function TransactionsScreen() {
                   : type === "debit"
                   ? "Withdrawals"
                   : "All"}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -159,7 +160,7 @@ export default function TransactionsScreen() {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#003366" />
+          <ActivityIndicator size="large" color="#010e5a" />
         </View>
       ) : (
         <FlatList
@@ -171,14 +172,14 @@ export default function TransactionsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={["#003366"]}
-              tintColor="#003366"
+              colors={["#010e5a"]}
+              tintColor="#010e5a"
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="receipt-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>No transactions found.</Text>
+              <AppText style={styles.emptyText}>No transactions found.</AppText>
             </View>
           }
           // Optimization props to further prevent crashes on long lists
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  activeChip: { backgroundColor: "#003366", borderColor: "#003366" },
+  activeChip: { backgroundColor: "#010e5a", borderColor: "#010e5a" },
   chipText: { fontSize: 13, color: "#666", fontWeight: "600" },
   activeChipText: { color: "#fff" },
   listContent: { padding: 16, paddingBottom: 40 },

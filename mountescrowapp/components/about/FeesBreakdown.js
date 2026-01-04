@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Fonts } from "../../constants/Fonts";
+import { AppText } from "../ui/AppText";
 
 export default function FeesBreakdown() {
   const [inView, setInView] = useState(false);
@@ -99,15 +100,13 @@ export default function FeesBreakdown() {
       ]}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Fee Breakdown</Text>
-        <Text style={[styles.paragraph, { fontFamily: Fonts.body }]}>
+        <AppText style={styles.title}>Fee Breakdown</AppText>
+        <AppText style={[styles.paragraph, { fontFamily: Fonts.body }]}>
           Every transaction on our platform is subject to a dynamic fee based on
           the total deal value. This fee covers processing, escrow, and
-          disbursement services. It starts at{" "}
-          <Text style={styles.bold}>10%</Text> for smaller deals and decreases
-          to as low as <Text style={styles.bold}>1%</Text> for ultra-high-value
-          transactions.
-        </Text>
+          disbursement services. It starts at 10% for smaller deals and
+          decreases to as low as 1% for ultra-high-value transactions.
+        </AppText>
 
         {/* Toggle Button */}
         <TouchableOpacity
@@ -115,19 +114,19 @@ export default function FeesBreakdown() {
           style={styles.toggleButton}
           activeOpacity={0.8}
         >
-          <Text style={styles.toggleButtonText}>
+          <AppText style={styles.toggleButtonText}>
             {isOpen ? "Hide Pricing Structure" : "View Pricing Structure"}
-          </Text>
-          <Text style={styles.toggleIcon}>{isOpen ? "▲" : "▼"}</Text>
+          </AppText>
+          <AppText style={styles.toggleIcon}>{isOpen ? "▲" : "▼"}</AppText>
         </TouchableOpacity>
 
         {isOpen && (
           <View style={styles.tableWrapper}>
             {/* Visual Scroll Indicator */}
             <View style={styles.scrollIndicator}>
-              <Text style={styles.scrollIndicatorText}>
+              <AppText style={styles.scrollIndicatorText}>
                 ↔ Swipe to view full table
-              </Text>
+              </AppText>
             </View>
 
             <View style={styles.tableCard}>
@@ -140,32 +139,32 @@ export default function FeesBreakdown() {
                   {/* Table Header */}
                   <View style={[styles.tableRow, styles.headerRow]}>
                     <View style={[styles.tableCell, styles.colRange]}>
-                      <Text
+                      <AppText
                         style={[styles.headerText, { fontFamily: Fonts.body }]}
                       >
                         Deal Value
-                      </Text>
+                      </AppText>
                     </View>
                     <View style={[styles.tableCell, styles.colFee]}>
-                      <Text
+                      <AppText
                         style={[styles.headerText, { fontFamily: Fonts.body }]}
                       >
                         Buyer
-                      </Text>
+                      </AppText>
                     </View>
                     <View style={[styles.tableCell, styles.colFee]}>
-                      <Text
+                      <AppText
                         style={[styles.headerText, { fontFamily: Fonts.body }]}
                       >
                         Seller
-                      </Text>
+                      </AppText>
                     </View>
                     <View style={[styles.tableCell, styles.colFee]}>
-                      <Text
+                      <AppText
                         style={[styles.headerText, { fontFamily: Fonts.body }]}
                       >
                         Total
-                      </Text>
+                      </AppText>
                     </View>
                     <View
                       style={[
@@ -174,11 +173,11 @@ export default function FeesBreakdown() {
                         styles.lastCell,
                       ]}
                     >
-                      <Text
+                      <AppText
                         style={[styles.headerText, { fontFamily: Fonts.body }]}
                       >
                         Strategic Rationale
-                      </Text>
+                      </AppText>
                     </View>
                   </View>
 
@@ -186,7 +185,7 @@ export default function FeesBreakdown() {
                   {pricingStructure.map((tier, index) => (
                     <View key={index} style={styles.tableRow}>
                       <View style={[styles.tableCell, styles.colRange]}>
-                        <Text
+                        <AppText
                           style={[
                             styles.cellText,
                             styles.blueText,
@@ -194,24 +193,24 @@ export default function FeesBreakdown() {
                           ]}
                         >
                           {tier.range}
-                        </Text>
+                        </AppText>
                       </View>
                       <View style={[styles.tableCell, styles.colFee]}>
-                        <Text
+                        <AppText
                           style={[styles.cellText, { fontFamily: Fonts.body }]}
                         >
                           {tier.buyerFee}
-                        </Text>
+                        </AppText>
                       </View>
                       <View style={[styles.tableCell, styles.colFee]}>
-                        <Text
+                        <AppText
                           style={[styles.cellText, { fontFamily: Fonts.body }]}
                         >
                           {tier.sellerFee}
-                        </Text>
+                        </AppText>
                       </View>
                       <View style={[styles.tableCell, styles.colFee]}>
-                        <Text
+                        <AppText
                           style={[
                             styles.cellText,
                             styles.bold,
@@ -219,7 +218,7 @@ export default function FeesBreakdown() {
                           ]}
                         >
                           {tier.totalFee}
-                        </Text>
+                        </AppText>
                       </View>
                       <View
                         style={[
@@ -228,7 +227,7 @@ export default function FeesBreakdown() {
                           styles.lastCell,
                         ]}
                       >
-                        <Text
+                        <AppText
                           style={[
                             styles.cellText,
                             styles.grayText,
@@ -236,7 +235,7 @@ export default function FeesBreakdown() {
                           ]}
                         >
                           {tier.rationale}
-                        </Text>
+                        </AppText>
                       </View>
                     </View>
                   ))}
@@ -248,25 +247,29 @@ export default function FeesBreakdown() {
 
         <View style={styles.infoContainer}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Payment options for buyers</Text>
+            <AppText style={styles.sectionTitle}>
+              Payment options for buyers
+            </AppText>
             {paymentOptions.map((item, index) => (
               <View key={index} style={styles.listItem}>
-                <Text style={styles.bullet}>•</Text>
-                <Text style={[styles.listText, { fontFamily: Fonts.body }]}>
+                <AppText style={styles.bullet}>•</AppText>
+                <AppText style={[styles.listText, { fontFamily: Fonts.body }]}>
                   {item}
-                </Text>
+                </AppText>
               </View>
             ))}
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Disbursement for sellers</Text>
-            <Text style={[styles.paragraph, { fontFamily: Fonts.body }]}>
+            <AppText style={styles.sectionTitle}>
+              Disbursement for sellers
+            </AppText>
+            <AppText style={[styles.paragraph, { fontFamily: Fonts.body }]}>
               When a transaction begins, sellers and brokers can choose how they
               would like to receive their funds. Once all terms are fulfilled
               and verified, Mountescrow credits the wallet of the seller. From
               there, the seller can easily request a withdrawal.
-            </Text>
+            </AppText>
           </View>
         </View>
       </View>

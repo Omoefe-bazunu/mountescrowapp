@@ -10,6 +10,7 @@ import {
   UIManager,
 } from "react-native";
 import { Fonts } from "../../constants/Fonts";
+import { AppText } from "../ui/AppText";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -67,7 +68,7 @@ export default function FAQSection() {
 
   return (
     <View style={styles.faqContainer}>
-      <Text style={styles.faqTitle}>FREQUENTLY ASKED QUESTIONS</Text>
+      <AppText style={styles.faqTitle}>FREQUENTLY ASKED QUESTIONS</AppText>
       <View style={styles.faqTabs}>
         {Object.keys(faqData).map((cat) => (
           <TouchableOpacity
@@ -78,7 +79,7 @@ export default function FAQSection() {
               setOpenIndex(null);
             }}
           >
-            <Text
+            <AppText
               style={[
                 styles.faqTabText,
                 { fontFamily: Fonts.body },
@@ -86,7 +87,7 @@ export default function FAQSection() {
               ]}
             >
               {cat}
-            </Text>
+            </AppText>
           </TouchableOpacity>
         ))}
       </View>
@@ -97,25 +98,25 @@ export default function FAQSection() {
               onPress={() => toggleFaq(idx)}
               style={styles.faqQuestion}
             >
-              <Text
+              <AppText
                 style={[
                   styles.faqQuestionText,
                   { fontFamily: Fonts.body, fontWeight: "bold" },
                 ]}
               >
                 {item.question}
-              </Text>
-              <Text style={[styles.faqIcon, { fontFamily: Fonts.body }]}>
+              </AppText>
+              <AppText style={[styles.faqIcon, { fontFamily: Fonts.body }]}>
                 {openIndex === idx ? "−" : "+"}
-              </Text>
+              </AppText>
             </TouchableOpacity>
             {openIndex === idx && (
               <View style={styles.faqAnswer}>
-                <Text
+                <AppText
                   style={[styles.faqAnswerText, { fontFamily: Fonts.body }]}
                 >
                   {item.answer}
-                </Text>
+                </AppText>
               </View>
             )}
           </View>

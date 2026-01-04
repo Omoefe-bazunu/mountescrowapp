@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../contexts/AuthContexts";
 import apiClient from "../../../src/api/apiClient";
+import { AppText } from "../../../components/ui/AppText";
 
 export default function DashboardOverview() {
   const { user, loading: authLoading, refresh: refreshUser } = useAuth();
@@ -82,24 +83,24 @@ export default function DashboardOverview() {
     return (
       <View style={styles.txRow} key={item.id}>
         <View style={styles.txInfo}>
-          <Text style={styles.txDescription} numberOfLines={1}>
+          <AppText style={styles.txDescription} numberOfLines={1}>
             {item.description}
-          </Text>
-          <Text style={styles.txDate}>
+          </AppText>
+          <AppText style={styles.txDate}>
             {toDate(item.createdAt)
               ? format(toDate(item.createdAt), "MMM dd, yyyy")
               : "N/A"}
-          </Text>
+          </AppText>
         </View>
         <View style={styles.txAmountContainer}>
-          <Text
+          <AppText
             style={[
               styles.txAmount,
               isCredit ? styles.textGreen : styles.textRed,
             ]}
           >
             {isCredit ? "+" : "-"}₦{Number(item.amount || 0).toLocaleString()}
-          </Text>
+          </AppText>
           <Ionicons
             name={isCredit ? "arrow-down-circle" : "arrow-up-circle"} // Matching icons (Down = In/Green, Up = Out/Red)
             size={16}
@@ -125,25 +126,27 @@ export default function DashboardOverview() {
     >
       {/* Stats Cards Section */}
       <View style={styles.statsGrid}>
-        <View style={[styles.statCard, { backgroundColor: "#003366" }]}>
-          <Text style={styles.statLabel}>Wallet Balance</Text>
-          <Text style={styles.statValue}>
+        <View style={[styles.statCard, { backgroundColor: "#010e5a" }]}>
+          <AppText style={styles.statLabel}>Wallet Balance</AppText>
+          <AppText style={styles.statValue}>
             ₦{user?.walletBalance?.toLocaleString() ?? "0.00"}
-          </Text>
-          <Text style={styles.statSub}>Available funds</Text>
+          </AppText>
+          <AppText style={styles.statSub}>Available funds</AppText>
         </View>
 
         <View style={styles.row}>
           <View style={[styles.statCardSmall, { backgroundColor: "#16a34a" }]}>
             <Ionicons name="cube" size={20} color="#fff" />
-            <Text style={styles.statValueSmall}>{stats.activeDeals}</Text>
-            <Text style={styles.statLabelSmall}>Active Deals</Text>
+            <AppText style={styles.statValueSmall}>{stats.activeDeals}</AppText>
+            <AppText style={styles.statLabelSmall}>Active Deals</AppText>
           </View>
 
-          <View style={[styles.statCardSmall, { backgroundColor: "#3b82f6" }]}>
+          <View style={[styles.statCardSmall, { backgroundColor: "#071495" }]}>
             <Ionicons name="document-text" size={20} color="#fff" />
-            <Text style={styles.statValueSmall}>{stats.pendingProposals}</Text>
-            <Text style={styles.statLabelSmall}>Pending Proposals</Text>
+            <AppText style={styles.statValueSmall}>
+              {stats.pendingProposals}
+            </AppText>
+            <AppText style={styles.statLabelSmall}>Pending Proposals</AppText>
           </View>
         </View>
       </View>
@@ -151,13 +154,13 @@ export default function DashboardOverview() {
       {/* Transactions Section */}
       <View style={styles.sectionHeader}>
         <View>
-          <Text style={styles.sectionTitle}>Recent Transactions</Text>
-          <Text style={styles.sectionSub}>Your last 5 transactions</Text>
+          <AppText style={styles.sectionTitle}>Recent Transactions</AppText>
+          <AppText style={styles.sectionSub}>Your last 5 transactions</AppText>
         </View>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/dashboard/transactions")}
         >
-          <Text style={styles.viewAll}>View All</Text>
+          <AppText style={styles.viewAll}>View All</AppText>
         </TouchableOpacity>
       </View>
 
@@ -170,7 +173,7 @@ export default function DashboardOverview() {
             </React.Fragment>
           ))
         ) : (
-          <Text style={styles.emptyText}>No recent transactions.</Text>
+          <AppText style={styles.emptyText}>No recent transactions.</AppText>
         )}
       </View>
     </ScrollView>
@@ -212,9 +215,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginTop: 8,
   },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#003366" },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#010e5a" },
   sectionSub: { fontSize: 12, color: "#666" },
-  viewAll: { color: "#f97316", fontWeight: "bold", fontSize: 14 },
+  viewAll: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 14,
+    backgroundColor: "#010e5a",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 3,
+  },
   txListCard: {
     backgroundColor: "#fff",
     borderRadius: 12,

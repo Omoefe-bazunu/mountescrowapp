@@ -1,56 +1,26 @@
-// sections/HeroSection.js
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ImageBackground,
   Dimensions,
   TouchableOpacity,
-  Image,
-  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Fonts } from "../../constants/Fonts";
+import { useTheme } from "../../contexts/ThemeContext";
+import { AppText } from "../ui/AppText";
 
 const { width } = Dimensions.get("window");
-const youtubeVideoId = "DaRXece2ItE";
-const getThumbnailUrl = (id) =>
-  `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 
 export default function HeroSection() {
   const [visible, setVisible] = useState(false);
   const router = useRouter();
+  const { colors } = useTheme();
 
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
-
-  const handlePlay = useCallback(() => {
-    const youtubeUrl = `https://www.youtube.com/watch?v=${youtubeVideoId}`;
-    Linking.openURL(youtubeUrl).catch((err) =>
-      console.error("Could not open YouTube link", err)
-    );
-  }, []);
-
-  const VideoPlayerComponent = () => (
-    <TouchableOpacity
-      style={styles.iframeContainer}
-      activeOpacity={0.8}
-      onPress={handlePlay}
-    >
-      <Image
-        source={{ uri: getThumbnailUrl(youtubeVideoId) }}
-        style={styles.thumbnailImage}
-        resizeMode="cover"
-      />
-      <View style={styles.playButtonContainer}>
-        <MaterialIcons name="play-arrow" size={50} color="#fff" />
-      </View>
-    </TouchableOpacity>
-  );
 
   return (
     <ImageBackground
@@ -60,28 +30,50 @@ export default function HeroSection() {
       style={styles.heroContainer}
       resizeMode="cover"
     >
+      {/* Decorative Dots */}
       <View style={styles.dotsContainer}>
-        <View style={[styles.dot, styles.dot2]} />
-        <View style={[styles.dot, styles.dot3]} />
+        <View
+          style={[styles.dot, styles.dot2, { backgroundColor: colors.warning }]}
+        />
+        <View
+          style={[styles.dot, styles.dot3, { backgroundColor: colors.warning }]}
+        />
       </View>
+
+      {/* Main Content Area */}
       <View style={[styles.heroContent, visible && styles.animateIn]}>
         <View style={styles.textContainer}>
-          <Text style={styles.headline}>
-            Every Transaction{"\n"}
-            <Text style={styles.orange}>Absolute Trust{"\n"}</Text>
-            <Text style={styles.white}>Every time</Text>
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(tabs)/dashboard")}
-            style={styles.button}
+          <AppText
+            allowFontScaling={false}
+            style={[styles.headline, { fontFamily: "Montaga" }]}
           >
-            <Text style={[styles.buttonText, { fontFamily: Fonts.body }]}>
+            Every Transaction{"\n"}
+            <AppText style={{ color: colors.warning, fontFamily: "Montaga" }}>
+              Absolute Trust{"\n"}
+            </AppText>
+            <AppText style={{ color: "#fff", fontFamily: "Montaga" }}>
+              Every time
+            </AppText>
+          </AppText>
+
+          {/* <TouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard")}
+            style={[styles.button, { backgroundColor: colors.warning }]}
+            activeOpacity={0.8}
+          >
+            <AppText
+              allowFontScaling={false}
+              style={[
+                styles.buttonText,
+                {
+                  fontFamily: "Montaga",
+                  color: "white", // Ensures visibility in Dark Mode
+                },
+              ]}
+            >
               Get Started
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.videoContainer}>
-          <VideoPlayerComponent />
+            </AppText>
+          </TouchableOpacity> */}
         </View>
       </View>
     </ImageBackground>
@@ -90,14 +82,14 @@ export default function HeroSection() {
 
 const styles = StyleSheet.create({
   heroContainer: {
-    minHeight: 600,
-    paddingVertical: 60,
+    minHeight: 650, // Reduced height since video is removed
+    paddingVertical: 80,
     justifyContent: "center",
   },
   dotsContainer: { ...StyleSheet.absoluteFillObject, pointerEvents: "none" },
-  dot: { width: 8, height: 8, backgroundColor: "#FB923C", borderRadius: 4 },
-  dot2: { position: "absolute", top: 160, right: 80 },
-  dot3: { position: "absolute", bottom: 160, left: width * 0.25 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  dot2: { position: "absolute", top: 120, right: 60 },
+  dot3: { position: "absolute", bottom: 120, left: width * 0.2 },
   heroContent: {
     maxWidth: 1024,
     width: "100%",
@@ -107,37 +99,32 @@ const styles = StyleSheet.create({
     transform: [{ translateY: 30 }],
   },
   animateIn: { opacity: 1, transform: [{ translateY: 0 }] },
-  textContainer: { alignItems: "center", maxWidth: 768 },
+  textContainer: {
+    alignItems: "center",
+    maxWidth: 768,
+    alignSelf: "center",
+  },
   headline: {
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: 36,
+    fontSize: 40, // Increased slightly for impact
     textAlign: "center",
-    lineHeight: 44,
+    lineHeight: 48,
+    fontWeight: "bold",
   },
-  orange: { color: "#FB923C" },
-  white: { color: "#fff" },
   button: {
-    backgroundColor: "#FB923C",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 16,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 32,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
-  videoContainer: { width: "100%", maxWidth: 768, marginTop: 16 },
-  iframeContainer: {
-    aspectRatio: 16 / 9,
-    borderRadius: 24,
-    overflow: "hidden",
-    borderWidth: 8,
-    borderColor: "#fff",
-  },
-  thumbnailImage: { ...StyleSheet.absoluteFillObject },
-  playButtonContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.4)",
+  buttonText: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
   },
 });

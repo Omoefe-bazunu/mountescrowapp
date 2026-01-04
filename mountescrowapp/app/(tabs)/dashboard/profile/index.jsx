@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -15,6 +14,7 @@ import { useAuth } from "../../../../contexts/AuthContexts";
 import apiClient from "../../../../src/api/apiClient";
 import ChangePasswordModal from "./_components/ChangePasswordModal";
 import { format } from "date-fns";
+import { AppText } from "../../../../components/ui/AppText";
 
 // Define Admin Emails
 const ADMIN_EMAILS = ["raniem57@gmail.com", "mountescrow@gmail.com"];
@@ -111,18 +111,24 @@ export default function ProfileScreen() {
       contentContainerStyle={{ paddingBottom: 40 }}
     >
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile Settings</Text>
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/dashboard")}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#003366" />
+        </TouchableOpacity>
+        <AppText style={styles.headerTitle}>Profile Settings</AppText>
         <TouchableOpacity
           onPress={() => (isEditing ? setIsEditing(false) : setIsEditing(true))}
         >
-          <Text style={styles.editBtn}>
+          <AppText style={styles.editBtn}>
             {isEditing ? "Cancel" : "Edit Profile"}
-          </Text>
+          </AppText>
         </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Personal Information</Text>
+        <AppText style={styles.sectionTitle}>Personal Information</AppText>
         {isEditing ? (
           <View>
             <TextInput
@@ -146,7 +152,7 @@ export default function ProfileScreen() {
               {isSaving ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.saveText}>Save Changes</Text>
+                <AppText style={styles.saveText}>Save Changes</AppText>
               )}
             </TouchableOpacity>
           </View>
@@ -164,7 +170,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account Status</Text>
+        <AppText style={styles.sectionTitle}>Account Status</AppText>
         <View style={styles.infoBox}>
           <StatusRow
             label="KYC Status"
@@ -187,7 +193,7 @@ export default function ProfileScreen() {
           onPress={() => setShowPasswordModal(true)}
         >
           <Ionicons name="key-outline" size={20} color="#003366" />
-          <Text style={styles.securityText}>Change Password</Text>
+          <AppText style={styles.securityText}>Change Password</AppText>
         </TouchableOpacity>
 
         {/* ADMIN DASHBOARD BUTTON (Only for Admins) */}
@@ -197,14 +203,14 @@ export default function ProfileScreen() {
             onPress={() => router.push("/(tabs)/dashboard/profile/admin")} // Adjust route as needed
           >
             <Ionicons name="shield-checkmark-outline" size={20} color="#fff" />
-            <Text style={styles.adminText}>Admin Dashboard</Text>
+            <AppText style={styles.adminText}>Admin Dashboard</AppText>
           </TouchableOpacity>
         )}
 
         {/* LOGOUT BUTTON */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogoutPress}>
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-          <Text style={styles.logoutText}>Log Out</Text>
+          <AppText style={styles.logoutText}>Log Out</AppText>
         </TouchableOpacity>
       </View>
 
@@ -220,17 +226,17 @@ const InfoRow = ({ icon, label, value }) => (
   <View style={styles.row}>
     <Ionicons name={icon} size={20} color="#999" />
     <View style={{ marginLeft: 15 }}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value || "N/A"}</Text>
+      <AppText style={styles.rowLabel}>{label}</AppText>
+      <AppText style={styles.rowValue}>{value || "N/A"}</AppText>
     </View>
   </View>
 );
 
 const StatusRow = ({ label, value }) => (
   <View style={[styles.row, { justifyContent: "space-between" }]}>
-    <Text style={styles.rowLabel}>{label}</Text>
+    <AppText style={styles.rowLabel}>{label}</AppText>
     <View style={styles.badge}>
-      <Text style={styles.badgeText}>{value}</Text>
+      <AppText style={styles.badgeText}>{value}</AppText>
     </View>
   </View>
 );
@@ -244,6 +250,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 12,
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    elevation: 1,
   },
   headerTitle: { fontSize: 20, fontWeight: "bold", color: "#003366" },
   editBtn: { color: "#f97316", fontWeight: "600" },

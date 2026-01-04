@@ -10,6 +10,7 @@ import {
   Animated,
 } from "react-native";
 import { Fonts } from "../../constants/Fonts";
+import { AppText } from "../ui/AppText";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -140,11 +141,11 @@ export default function ConfidenceSection() {
             marginTop: 24,
           }}
         >
-          <TouchableOpacity style={[styles.button, styles.confidenceButton]}>
-            <Text style={[styles.buttonText, { fontFamily: Fonts.body }]}>
+          {/* <TouchableOpacity style={[styles.button, styles.confidenceButton]}>
+            <AppText style={[styles.buttonText, { fontFamily: Fonts.body }]}>
               Get Started
-            </Text>
-          </TouchableOpacity>
+            </AppText>
+          </TouchableOpacity> */}
         </Animated.View>
         <View style={styles.cardsGrid}>
           {cards.map((card, idx) => (
@@ -165,12 +166,12 @@ export default function ConfidenceSection() {
                 },
               ]}
             >
-              <Text style={[styles.cardTitle, { fontFamily: Fonts.body }]}>
+              <AppText style={[styles.cardTitle, { fontFamily: Fonts.body }]}>
                 {card.title}
-              </Text>
-              <Text style={[styles.cardText, { fontFamily: Fonts.body }]}>
+              </AppText>
+              <AppText style={[styles.cardText, { fontFamily: Fonts.body }]}>
                 {card.text}
-              </Text>
+              </AppText>
             </Animated.View>
           ))}
         </View>
@@ -219,12 +220,12 @@ const styles = StyleSheet.create({
     color: "#010e5a",
   },
   button: {
-    backgroundColor: "#FB923C",
+    backgroundColor: "#f97316",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
-  confidenceButton: { backgroundColor: "#FB923C" },
+  confidenceButton: { backgroundColor: "#f97316" },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
   cardsGrid: {
     flexDirection: "row",
